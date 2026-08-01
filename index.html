@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PULMOSCIENCE | Digital Pulmonary Lab & 3D Interactive Exhibit</title>
-    <meta name="description" content="A flagship interactive WebGL digital science exhibit exploring human pulmonary mechanics, cellular gas exchange, and tobacco aerosol pathophysiology.">
+    <title>PULMOSCIENCE | Digital Pulmonary Lab & Science Exhibit</title>
+    <meta name="description" content="An interactive, WebGL-powered science exhibit exploring human respiratory mechanics, cellular gas exchange, and tobacco aerosol pathophysiology.">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,7 @@
                     colors: {
                         lab: {
                             bg: '#030712',
-                            panel: 'rgba(15, 23, 42, 0.75)',
+                            panel: 'rgba(15, 23, 42, 0.85)',
                             cyan: '#06b6d4',
                             teal: '#14b8a6',
                             crimson: '#e11d48',
@@ -42,53 +42,63 @@
         :root { --bg: #030712; }
         body { background-color: var(--bg); color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
 
-        /* WCAG 2.2 AA Focus Indicators */
+        /* WCAG 2.2 AA Focus Styling */
         *:focus-visible { outline: 3px solid #06b6d4 !important; outline-offset: 3px !important; }
 
-        /* WebGL Background Stage */
+        /* Background WebGL Stage & Overlay Layers */
         #webgl-stage {
             position: fixed;
             inset: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 10;
+            z-index: 5; /* Base background */
             pointer-events: none;
         }
 
-        /* 2D Particulate Physics Overlay Canvas */
         #particle-canvas {
             position: fixed;
             inset: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 15;
+            z-index: 10; /* Ambient particle layer */
             pointer-events: none;
         }
 
-        /* Surface Material Variations */
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.85);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+        .grid-bg {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
         }
 
+        /* Surface Material System (High Contrast & Readability) */
         .matte-card {
             background: rgba(11, 17, 31, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9);
+            position: relative;
+            z-index: 30;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+            position: relative;
+            z-index: 30;
         }
 
         .instrument-panel {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(28px);
-            border: 1px solid rgba(6, 182, 212, 0.25);
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(6, 182, 212, 0.3);
             box-shadow: 0 0 35px rgba(6, 182, 212, 0.1);
+            position: relative;
+            z-index: 30;
         }
 
-        /* Desktop Scrollytelling Mechanics */
+        /* Controlled Layout Engine (Eliminates Huge Voids) */
         .scrolly-wrapper { position: relative; display: flex; width: 100%; }
         .sticky-stage {
             position: sticky;
@@ -104,20 +114,19 @@
         .story-stream { width: 50%; margin-left: auto; position: relative; z-index: 30; }
 
         .story-step {
-            min-height: 100vh;
+            padding: 100px 3.5rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 4rem 3.5rem;
-            opacity: 0.15;
-            filter: blur(4px);
-            transform: translateY(30px);
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0.25;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            position: relative;
+            z-index: 30;
         }
         .story-step.is-active {
-            opacity: 1;
-            filter: blur(0px);
-            transform: translateY(0);
+            opacity: 1 !important;
+            transform: translateY(0) !important;
         }
 
         /* Floating Nav Progress Dots */
@@ -125,39 +134,39 @@
             width: 8px;
             height: 8px;
             border-radius: 9999px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
             transition: all 0.3s ease;
         }
         .progress-dot.active {
             background: #06b6d4;
             box-shadow: 0 0 10px #06b6d4;
-            transform: scale(1.4);
+            transform: scale(1.5);
         }
 
         /* Mobile Responsive Layout Engine (<1024px) */
         @media (max-width: 1024px) {
             .scrolly-wrapper { flex-direction: column; }
-            .sticky-stage { width: 100%; height: 45vh; position: sticky; top: 4rem; z-index: 20; }
+            .sticky-stage { width: 100%; height: 40vh; position: sticky; top: 4rem; z-index: 20; }
             .story-stream { width: 100%; margin-left: 0; }
-            .story-step { min-height: 70vh; padding: 2rem 1.25rem; }
+            .story-step { padding: 60px 1.25rem; min-height: auto; }
         }
     </style>
 </head>
-<body class="antialiased selection:bg-lab-cyan selection:text-lab-bg">
+<body class="antialiased selection:bg-lab-cyan selection:text-lab-bg grid-bg">
 
     <!-- Accessibility Skip Link -->
     <a href="#signature-feature" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-lab-cyan focus:text-lab-bg focus:font-bold focus:rounded-xl">
-        Skip to Journey of One Breath
+        Skip to main content
     </a>
 
-    <!-- HARDWARE ACCELERATED THREE.JS WEBGL CANVAS STAGE -->
+    <!-- THREE.JS WEBGL CANVAS STAGE (Z-INDEX: 5) -->
     <div id="webgl-stage"></div>
 
-    <!-- 2D PARTICULATE PHYSICS CANVAS OVERLAY -->
+    <!-- 2D PARTICULATE PHYSICS OVERLAY CANVAS (Z-INDEX: 10) -->
     <canvas id="particle-canvas"></canvas>
 
-    <!-- FLOATING CHAPTER PROGRESS TRACKER -->
-    <aside class="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4 items-center bg-slate-900/80 backdrop-blur-md p-3 rounded-full border border-slate-800/80" aria-label="Chapter Navigation">
+    <!-- FLOATING CHAPTER PROGRESS TRACKER (Z-INDEX: 50) -->
+    <aside class="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4 items-center bg-slate-900/90 backdrop-blur-md p-3 rounded-full border border-slate-800/80" aria-label="Chapter Navigation">
         <a href="#hero" class="progress-dot active" title="01. Hero" id="dot-hero"></a>
         <a href="#signature-feature" class="progress-dot" title="02. One Breath Simulation" id="dot-signature-feature"></a>
         <a href="#narrative" class="progress-dot" title="03. Anatomy Scrollytelling" id="dot-narrative"></a>
@@ -166,8 +175,8 @@
         <a href="#recovery" class="progress-dot" title="06. Cessation Recovery" id="dot-recovery"></a>
     </aside>
 
-    <!-- TOP NAVIGATION HEADER -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-lab-bg/85 backdrop-blur-2xl border-b border-slate-800/60 px-6 py-4 flex justify-between items-center" role="banner">
+    <!-- TOP NAVIGATION HEADER (Z-INDEX: 50) -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-lab-bg/90 backdrop-blur-2xl border-b border-slate-800/80 px-6 py-4 flex justify-between items-center" role="banner">
         <a href="#" class="flex items-center gap-3 font-bold text-lg tracking-wider text-white">
             <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-lab-teal to-lab-cyan flex items-center justify-center text-lab-bg font-mono font-extrabold text-xs shadow-lg shadow-lab-cyan/20">
                 3D
@@ -175,7 +184,7 @@
             <span class="font-mono tracking-widest text-sm">PULMOS<span class="text-lab-cyan">|</span>SCIENCE</span>
         </a>
 
-        <nav class="hidden lg:flex items-center gap-8 text-xs font-mono text-slate-400" aria-label="Primary Navigation">
+        <nav class="hidden lg:flex items-center gap-8 text-xs font-mono text-slate-300" aria-label="Primary Navigation">
             <a href="#signature-feature" class="hover:text-lab-cyan transition-colors">01. One Breath Simulation</a>
             <a href="#narrative" class="hover:text-lab-cyan transition-colors">02. 3D Anatomy Lab</a>
             <a href="#copd-cross-section" class="hover:text-lab-cyan transition-colors">03. Airway Simulator</a>
@@ -183,34 +192,34 @@
         </nav>
 
         <div class="flex items-center gap-3">
-            <button id="audio-toggle-btn" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 px-3.5 py-1.5 rounded-full text-xs font-mono flex items-center gap-2 transition-all" aria-label="Toggle Spatial Audio Synthesis">
+            <button id="audio-toggle-btn" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 px-3.5 py-1.5 rounded-full text-xs font-mono flex items-center gap-2 transition-all" aria-label="Toggle Audio Synthesis">
                 <i data-lucide="volume-x" id="audio-icon" class="w-3.5 h-3.5 text-slate-400"></i>
                 <span id="audio-status">Audio: Off</span>
             </button>
 
-            <span class="text-[11px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-full flex items-center gap-2">
+            <span class="text-[11px] font-mono text-slate-300 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-full flex items-center gap-2">
                 <span id="nav-pulse-dot" class="w-2 h-2 rounded-full bg-lab-teal animate-pulse"></span>
                 <span id="nav-sat-meter">COHb: &lt; 1%</span>
             </span>
         </div>
     </header>
 
-    <main role="main">
+    <main role="main" class="relative z-30">
 
         <!-- 1. CINEMATIC HERO SECTION -->
-        <section id="hero" class="relative min-h-screen flex flex-col justify-center items-center text-center px-6 pt-24 pb-16 overflow-hidden border-b border-slate-800/50">
-            <div class="max-w-4xl mx-auto relative z-20">
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-mono text-lab-cyan mb-8">
+        <section id="hero" class="relative min-h-[90vh] flex flex-col justify-center items-center text-center px-6 pt-24 pb-16 overflow-hidden border-b border-slate-800/50">
+            <div class="max-w-4xl mx-auto relative z-30 bg-slate-950/80 p-8 sm:p-12 rounded-3xl border border-slate-800/80 backdrop-blur-md">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-mono text-lab-cyan mb-6">
                     <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
                     Interactive 3D WebGL Science Exhibit
                 </div>
 
-                <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-white mb-8 leading-[1.08]">
+                <h1 class="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.12]">
                     Every cigarette changes your lungs <br class="hidden sm:inline">
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-lab-teal via-lab-cyan to-blue-400">long before it changes your life.</span>
                 </h1>
 
-                <p class="text-lg sm:text-2xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-12 font-light">
+                <p class="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8 font-light">
                     Step inside the human respiratory engine. Observe cellular gas exchange, trace toxic aerosol pathways, and witness physiological recovery through interactive scrollytelling.
                 </p>
 
@@ -228,17 +237,17 @@
         </section>
 
         <!-- 2. FLAGSHIP INTERACTIVE: THE JOURNEY OF ONE BREATH -->
-        <section id="signature-feature" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
-            <div class="mb-12 text-center max-w-3xl mx-auto">
+        <section id="signature-feature" class="py-20 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
+            <div class="mb-10 text-center max-w-3xl mx-auto">
                 <span class="font-mono text-xs text-lab-cyan uppercase tracking-widest font-semibold">Flagship Interactive Feature</span>
                 <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-2">The Journey of One Breath</h2>
-                <p class="text-slate-400 text-sm sm:text-base mt-3">
+                <p class="text-slate-300 text-sm sm:text-base mt-3">
                     Compare normal physiological gas exchange against cigarette smoke inhalation side-by-side. Step through each anatomical checkpoint in sequence.
                 </p>
             </div>
 
             <!-- Mode Selector Control -->
-            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-10 max-w-xl mx-auto" role="tablist" aria-label="Simulation Mode Selector">
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8 max-w-xl mx-auto" role="tablist" aria-label="Simulation Mode Selector">
                 <button id="btn-breath-clean" role="tab" aria-selected="true" class="flex-1 bg-lab-teal text-lab-bg font-bold px-6 py-4 rounded-2xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 border border-lab-teal">
                     <i data-lucide="wind" class="w-4 h-4"></i>
                     <span>Simulate 1 Normal Breath</span>
@@ -249,10 +258,10 @@
                 </button>
             </div>
 
-            <!-- Asymmetric Instrument Stage Layout -->
+            <!-- Asymmetric Stage Layout -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div class="lg:col-span-7 instrument-panel p-6 rounded-3xl min-h-[450px] flex flex-col items-center justify-center relative overflow-hidden">
-                    <div id="breath-stage-visual" class="relative w-full h-[380px] flex items-center justify-center">
+                <div class="lg:col-span-7 instrument-panel p-6 rounded-3xl min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden">
+                    <div id="breath-stage-visual" class="relative w-full h-[320px] flex items-center justify-center">
                         <svg viewBox="0 0 300 300" class="w-64 h-64 drop-shadow-2xl" aria-label="Alveolar Diffusion Diagram">
                             <circle cx="150" cy="150" r="80" fill="#0f172a" stroke="#1e293b" stroke-width="4"/>
                             <circle cx="110" cy="120" r="45" fill="#1e293b" stroke="#334155" stroke-width="3"/>
@@ -261,13 +270,13 @@
                         </svg>
                     </div>
 
-                    <div class="absolute bottom-4 left-6 right-6 flex justify-between items-center text-xs font-mono text-slate-400 border-t border-slate-800/80 pt-3">
+                    <div class="absolute bottom-4 left-6 right-6 flex justify-between items-center text-xs font-mono text-slate-300 border-t border-slate-800/80 pt-3">
                         <span id="breath-phase-tag">Phase: Resting Exhalation</span>
                         <span id="breath-sat-tag" class="text-lab-teal font-bold">COHb: &lt; 1%</span>
                     </div>
                 </div>
 
-                <!-- Instrument Metrics Panel -->
+                <!-- Live Metrics Instrument Panel -->
                 <div class="lg:col-span-5 space-y-4">
                     <div class="instrument-panel p-6 rounded-3xl">
                         <span id="breath-mode-label" class="text-xs font-mono text-lab-teal font-bold uppercase tracking-wider block mb-2">Physiological State: Normal Airway</span>
@@ -298,10 +307,9 @@
         <!-- 3. SCROLLYTELLING 3D ANATOMY EXPLORER -->
         <section id="narrative" class="scrolly-wrapper">
             <div class="sticky-stage">
-                <div class="relative w-full h-full flex items-center justify-center p-6">
-                    <div class="absolute bottom-6 left-6 bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-full text-[11px] font-mono text-slate-400 flex items-center gap-2">
-                        <i data-lucide="move-3d" class="w-3.5 h-3.5 text-lab-cyan"></i> 3D WebGL Camera Synchronized to Scroll
-                    </div>
+                <!-- Visual indicator for WebGL Camera -->
+                <div class="absolute bottom-6 left-6 bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-full text-[11px] font-mono text-slate-300 flex items-center gap-2 shadow-lg">
+                    <i data-lucide="move-3d" class="w-3.5 h-3.5 text-lab-cyan"></i> 3D WebGL Camera Synchronized to Scroll
                 </div>
             </div>
 
@@ -355,7 +363,7 @@
                                 <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[90%] h-full bg-lab-crimson"></div></div>
                             </div>
                             <div>
-                                <div class="flex justify-between mb-1"><span class="text-slate-300">Carbon Monoxide (CO)</span><span class="text-lab-amber">Acute Binding Increase</span></div>
+                                <div class="flex justify-between mb-1"><span class="text-slate-300">Carbon Monoxide (CO)</span><span class="text-lab-amber">200x Hb Binding Affinity</span></div>
                                 <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[45%] h-full bg-lab-amber"></div></div>
                             </div>
                         </div>
@@ -400,17 +408,17 @@
         </section>
 
         <!-- 4. INTERACTIVE AIRWAY CROSS-SECTION SIMULATOR -->
-        <section id="copd-cross-section" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
-            <div class="mb-12 text-center max-w-2xl mx-auto">
+        <section id="copd-cross-section" class="py-20 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
+            <div class="mb-10 text-center max-w-2xl mx-auto">
                 <span class="font-mono text-xs text-lab-cyan uppercase tracking-widest font-semibold">Interactive Pathology Simulator</span>
                 <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Airway Lumen Narrowing Slider</h2>
-                <p class="text-slate-400 text-sm mt-2">Drag the exposure slider below to watch real-time mucosal inflammation expansion and airway lumen resistance changes.</p>
+                <p class="text-slate-300 text-sm mt-2">Drag the exposure slider below to watch real-time mucosal inflammation expansion and airway lumen resistance changes.</p>
             </div>
 
             <div class="instrument-panel p-8 rounded-3xl">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                     <div class="lg:col-span-7 flex flex-col items-center justify-center">
-                        <canvas id="airway-lumen-canvas" width="320" height="320" class="bg-slate-950 rounded-2xl border border-slate-800 mb-6"></canvas>
+                        <canvas id="airway-lumen-canvas" width="300" height="300" class="bg-slate-950 rounded-2xl border border-slate-800 mb-6"></canvas>
                         
                         <!-- Slider Control -->
                         <div class="w-full max-w-md">
@@ -437,11 +445,11 @@
         </section>
 
         <!-- 5. 300+ PROCEDURAL BEZIER CILIA SIMULATION -->
-        <section id="cilia-sim" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
-            <div class="mb-12 text-center max-w-2xl mx-auto">
+        <section id="cilia-sim" class="py-20 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
+            <div class="mb-10 text-center max-w-2xl mx-auto">
                 <span class="font-mono text-xs text-lab-cyan uppercase tracking-widest font-semibold">Micro-Physiology Interactive</span>
                 <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">300+ Procedural Cilia Wave Engine</h2>
-                <p class="text-slate-400 text-sm mt-2">Procedural Bézier-curve wave propagation showing rhythmic metachronal beating vs. smoke-induced stasis.</p>
+                <p class="text-slate-300 text-sm mt-2">Procedural Bézier-curve wave propagation showing rhythmic metachronal beating vs. smoke-induced stasis.</p>
             </div>
 
             <div class="instrument-panel p-8 rounded-3xl text-center">
@@ -464,8 +472,8 @@
         </section>
 
         <!-- 6. CLINICAL PATHOLOGY PROFILES -->
-        <section id="pathology" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
-            <div class="mb-12">
+        <section id="pathology" class="py-20 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
+            <div class="mb-10">
                 <span class="font-mono text-xs text-lab-crimson uppercase tracking-widest font-semibold">Clinical Profiles</span>
                 <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Pulmonary Disease Pathogenesis</h2>
             </div>
@@ -507,7 +515,7 @@
         </section>
 
         <!-- 7. EMOTIONAL, RESONANT FINALE -->
-        <section id="recovery" class="py-32 text-center px-6 relative z-30 bg-lab-bg">
+        <section id="recovery" class="py-28 text-center px-6 relative z-30 bg-lab-bg">
             <div class="max-w-3xl mx-auto">
                 <span class="font-mono text-xs text-lab-cyan uppercase tracking-widest mb-4 inline-block">Final Reflection</span>
                 <h2 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
@@ -531,12 +539,12 @@
         <p>© PULMOSCIENCE Initiative. Interactive WebGL Pulmonology Exhibit.</p>
     </footer>
 
-    <!-- ENGINE CONTROLLER & MODULAR STATE ARCHITECTURE -->
+    <!-- REFACTORED ENGINE CONTROLLER & STATE ARCHITECTURE -->
     <script>
         lucide.createIcons();
         gsap.registerPlugin(ScrollTrigger);
 
-        // --- CENTRALIZED LAB STATE MANAGER ---
+        // --- CENTRALIZED STATE MANAGER ---
         const LabState = {
             activeMode: 'oxygen',
             audioActive: false,
@@ -548,7 +556,7 @@
             LabState.isTabVisible = !document.hidden;
         });
 
-        // --- PROCEDURAL RECURSIVE 3D BRONCHIAL TREE (THREE.JS) ---
+        // --- PROCEDURAL ANATOMICAL TREE (THREE.JS WEBGL) ---
         const stageEl = document.getElementById('webgl-stage');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -566,7 +574,6 @@
             opacity: 0.22
         });
 
-        // Recursive Branch Generator
         function buildTreeBranch(length, radius, depth) {
             const group = new THREE.Group();
             const geo = new THREE.CylinderGeometry(radius * 0.7, radius, length, 12);
@@ -596,7 +603,6 @@
         pulmonaryTree.add(treeMesh);
         scene.add(pulmonaryTree);
 
-        // Lighting
         scene.add(new THREE.AmbientLight(0xffffff, 0.8));
         const pLight = new THREE.PointLight(0x06b6d4, 2.5, 40);
         pLight.position.set(0, 2, 8);
@@ -630,7 +636,7 @@
             gsap.to(pulmonaryTree.rotation, { x: y, y: x, duration: 1 });
         });
 
-        // --- MULTI-SPECIES FLUID PHYSICS ENGINE ---
+        // --- MULTI-PARTICULATE PHYSICS ENGINE ---
         const particleCanvas = document.getElementById('particle-canvas');
         const pCtx = particleCanvas.getContext('2d');
         particleCanvas.width = window.innerWidth;
@@ -676,7 +682,7 @@
         }
         renderParticlePhysics();
 
-        // --- LAYERED WEB AUDIO API SYNTHESIZER ---
+        // --- WEB AUDIO API SYNTHESIZER ---
         let audioCtx = null;
         const audioBtn = document.getElementById('audio-toggle-btn');
         const audioStatus = document.getElementById('audio-status');
@@ -695,7 +701,7 @@
             if (!LabState.audioActive || !audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.frequency.value = LabState.activeMode === 'smoke' ? 88 : 60; // Tachycardia frequency Shift
+            osc.frequency.value = LabState.activeMode === 'smoke' ? 88 : 60;
             gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
             osc.connect(gain);
@@ -765,29 +771,25 @@
 
         function drawAirwayLumen(val) {
             lCtx.clearRect(0, 0, lumenCanvas.width, lumenCanvas.height);
-            const cx = 160, cy = 160;
-            const outerR = 120;
-            const innerR = 100 - (val * 0.65); // Lumen narrowing calculation
+            const cx = 150, cy = 150;
+            const outerR = 110;
+            const innerR = 90 - (val * 0.58);
 
-            // Outer Muscle Wall
             lCtx.beginPath();
             lCtx.arc(cx, cy, outerR, 0, Math.PI * 2);
             lCtx.fillStyle = '#1e293b';
             lCtx.fill();
 
-            // Submucosal Inflammatory Layer
             lCtx.beginPath();
             lCtx.arc(cx, cy, outerR - 5, 0, Math.PI * 2);
             lCtx.fillStyle = `rgba(225, 29, 72, ${val / 100 * 0.8})`;
             lCtx.fill();
 
-            // Open Lumen Area
             lCtx.beginPath();
             lCtx.arc(cx, cy, innerR, 0, Math.PI * 2);
             lCtx.fillStyle = '#030712';
             lCtx.fill();
 
-            // Metrics Update
             document.getElementById('lumen-wall-metric').textContent = val > 50 ? "Severe Submucosal Edema" : "Normal Thickness";
             document.getElementById('lumen-wall-metric').className = val > 50 ? "text-lab-crimson font-bold text-sm" : "text-lab-teal font-bold text-sm";
             document.getElementById('lumen-res-metric').textContent = `${(1.2 + (val / 10)).toFixed(1)} cmH₂O/L/s (${val > 50 ? 'High Resistance' : 'Normal'})`;
@@ -821,6 +823,44 @@
 
         document.getElementById('btn-cilia-healthy').addEventListener('click', () => ciliaWaveTL.play());
         document.getElementById('btn-cilia-paralyzed').addEventListener('click', () => ciliaWaveTL.pause());
+
+        // --- STABILIZED GSAP SCROLLTRIGGER ENGINE ---
+        const steps = gsap.utils.toArray('.story-step');
+        steps.forEach((step, idx) => {
+            ScrollTrigger.create({
+                trigger: step,
+                start: "top 75%",
+                end: "bottom 25%",
+                onToggle: (self) => {
+                    if (self.isActive) {
+                        steps.forEach(s => s.classList.remove('is-active'));
+                        step.classList.add('is-active');
+                        
+                        const mode = step.getAttribute('data-mode');
+                        if (mode) LabState.activeMode = mode;
+                    }
+                }
+            });
+        });
+
+        // Floating Right Rail Progress Dot Updates
+        const sectionIds = ['hero', 'signature-feature', 'narrative', 'copd-cross-section', 'cilia-sim', 'recovery'];
+        sectionIds.forEach(id => {
+            const sec = document.getElementById(id);
+            if (!sec) return;
+            ScrollTrigger.create({
+                trigger: sec,
+                start: "top 50%",
+                end: "bottom 50%",
+                onToggle: (self) => {
+                    if (self.isActive) {
+                        document.querySelectorAll('.progress-dot').forEach(d => d.classList.remove('active'));
+                        const dot = document.getElementById(`dot-${id}`);
+                        if (dot) dot.classList.add('active');
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
