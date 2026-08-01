@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PULMOSCIENCE | Digital Anatomy Lab & Interactive Respiratory Exhibit</title>
-    <meta name="description" content="A flagship interactive digital science exhibit detailing human pulmonary biomechanics, gas exchange, and nicotine aerosol pathophysiology.">
+    <meta name="description" content="A world-class interactive science exhibit detailing human pulmonary biomechanics, cellular gas exchange, and tobacco aerosol pathophysiology.">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,7 @@
                     colors: {
                         lab: {
                             bg: '#030712',
-                            panel: 'rgba(15, 23, 42, 0.75)',
+                            panel: 'rgba(15, 23, 42, 0.8)',
                             cyan: '#06b6d4',
                             teal: '#14b8a6',
                             crimson: '#e11d48',
@@ -45,41 +45,46 @@
         *:focus-visible { outline: 3px solid #06b6d4 !important; outline-offset: 3px !important; }
 
         /* Glassmorphism System */
-        .glass-panel {
+        .glass-card {
             background: rgba(15, 23, 42, 0.75);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.85);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
         }
 
-        /* Continuous Respiratory Motion Engine */
+        .glass-card:hover {
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        /* Respiratory Motion Mechanics */
         @keyframes breathDiaphragm {
             0%, 100% { transform: translateY(0px) scaleY(1); }
-            50% { transform: translateY(12px) scaleY(0.95); }
+            50% { transform: translateY(14px) scaleY(0.94); }
         }
         @keyframes breathLungs {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.035); }
+            50% { transform: scale(1.038); }
         }
 
-        .animate-diaphragm { animation: breathDiaphragm 4.2s ease-in-out infinite; transform-origin: center top; }
-        .animate-lungs { animation: breathLungs 4.2s ease-in-out infinite; transform-origin: 200px 300px; }
+        .animate-diaphragm { animation: breathDiaphragm 4s ease-in-out infinite; transform-origin: center top; }
+        .animate-lungs { animation: breathLungs 4s ease-in-out infinite; transform-origin: 200px 300px; }
 
-        /* Smooth ViewBox Motion */
-        #respiratory-svg { transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+        /* SVG Dynamic ViewBox Matrix Smooth Transitions */
+        #respiratory-svg { transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        .anatomy-hotspot {
+        .anatomy-node {
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        .anatomy-hotspot:hover {
+        .anatomy-node:hover {
             filter: drop-shadow(0px 0px 14px rgba(6, 182, 212, 0.95));
         }
 
-        /* Scrollytelling Layout Mechanics */
+        /* Scrollytelling Setup */
         .scrolly-wrapper { position: relative; display: flex; width: 100%; }
-        .sticky-stage {
+        .sticky-visual {
             position: sticky;
             top: 0;
             height: 100vh;
@@ -109,7 +114,7 @@
             transform: translateY(0);
         }
 
-        /* Canvas Overlay */
+        /* Canvas Particle Overlay */
         #physics-canvas {
             position: fixed;
             inset: 0;
@@ -121,7 +126,7 @@
 
         @media (max-width: 1024px) {
             .scrolly-wrapper { flex-direction: column; }
-            .sticky-stage { width: 100%; height: 50vh; z-index: 40; }
+            .sticky-visual { width: 100%; height: 50vh; z-index: 40; }
             .story-stream { width: 100%; margin-top: 50vh; }
             .story-step { min-height: 80vh; padding: 2rem 1.5rem; }
         }
@@ -130,15 +135,15 @@
 <body class="antialiased selection:bg-lab-cyan selection:text-lab-bg">
 
     <!-- Accessibility Skip Link -->
-    <a href="#narrative" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-lab-cyan focus:text-lab-bg focus:font-bold focus:rounded-xl">
-        Skip to main scrollytelling narrative
+    <a href="#signature-feature" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-lab-cyan focus:text-lab-bg focus:font-bold focus:rounded-xl">
+        Skip to Journey of One Breath
     </a>
 
     <!-- Particle Physics Canvas Engine -->
     <canvas id="physics-canvas"></canvas>
 
     <!-- Top Navigation Header -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-lab-bg/80 backdrop-blur-2xl border-b border-slate-800/60 px-6 py-4 flex justify-between items-center">
+    <header class="fixed top-0 left-0 right-0 z-50 bg-lab-bg/85 backdrop-blur-2xl border-b border-slate-800/60 px-6 py-4 flex justify-between items-center">
         <a href="#" class="flex items-center gap-3 font-bold text-lg tracking-wider text-white">
             <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-lab-teal to-lab-cyan flex items-center justify-center text-lab-bg font-mono font-extrabold text-xs shadow-lg shadow-lab-cyan/20">
                 PS
@@ -147,60 +152,131 @@
         </a>
 
         <nav class="hidden lg:flex items-center gap-8 text-xs font-mono text-slate-400">
-            <a href="#hero" class="hover:text-lab-cyan transition-colors">01. Overview</a>
-            <a href="#narrative" class="hover:text-lab-cyan transition-colors">02. Anatomy Lab</a>
-            <a href="#cilia-sim" class="hover:text-lab-cyan transition-colors">03. Cilia Mechanics</a>
-            <a href="#visual-explainers" class="hover:text-lab-cyan transition-colors">04. Pathology</a>
-            <a href="#recovery" class="hover:text-lab-cyan transition-colors">05. Cessation</a>
+            <a href="#signature-feature" class="hover:text-lab-cyan transition-colors">01. One Breath Simulation</a>
+            <a href="#narrative" class="hover:text-lab-cyan transition-colors">02. Scrollytelling Anatomy</a>
+            <a href="#cilia-sim" class="hover:text-lab-cyan transition-colors">03. Mucociliary Mechanics</a>
+            <a href="#pathology" class="hover:text-lab-cyan transition-colors">04. Disease Profiles</a>
         </nav>
 
         <div class="flex items-center gap-3">
-            <span class="text-[11px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full hidden sm:flex items-center gap-2">
+            <span class="text-[11px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-full flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-lab-teal animate-pulse"></span>
-                Digital Science Exhibit
+                <span id="nav-sat-meter">SpO₂: 98% (Optimal)</span>
             </span>
         </div>
     </header>
 
     <main role="main">
 
-        <!-- 1. CINEMATIC HERO SECTION -->
+        <!-- HERO SECTION -->
         <section id="hero" class="relative min-h-screen flex flex-col justify-center items-center text-center px-6 pt-24 pb-16 overflow-hidden border-b border-slate-800/50">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.12),rgba(3,7,18,0))]"></div>
             
             <div class="max-w-4xl mx-auto relative z-20">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-mono text-lab-cyan mb-8">
                     <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                    Interactive Pulmonology & Science Museum
+                    National Digital Science Exhibit
                 </div>
 
                 <h1 class="text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tight text-white mb-8 leading-[1.05]">
-                    Protect Every <br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-lab-teal via-lab-cyan to-blue-400">Single Breath.</span>
+                    Every Breath <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-lab-teal via-lab-cyan to-blue-400">Tells a Biological Story.</span>
                 </h1>
 
                 <p class="text-lg sm:text-2xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-12 font-light">
-                    Step inside the human respiratory engine. Experience continuous biological gas exchange, trace toxic aerosol paths, and explore the science of cellular healing.
+                    Step inside the human respiratory engine. Observe cellular gas exchange, trace toxic aerosol pathways, and witness physiological recovery through interactive scrollytelling.
                 </p>
 
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <a href="#narrative" class="w-full sm:w-auto bg-white hover:bg-slate-100 text-lab-bg font-bold px-8 py-4 rounded-2xl transition-all text-sm shadow-xl flex items-center justify-center gap-2">
-                        <span>Enter Anatomy Lab</span>
-                        <i data-lucide="compass" class="w-4 h-4"></i>
+                    <a href="#signature-feature" class="w-full sm:w-auto bg-white hover:bg-slate-100 text-lab-bg font-bold px-8 py-4 rounded-2xl transition-all text-sm shadow-xl flex items-center justify-center gap-2">
+                        <span>Launch One Breath Simulation</span>
+                        <i data-lucide="play" class="w-4 h-4"></i>
                     </a>
-                    <a href="#visual-explainers" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-semibold px-8 py-4 rounded-2xl transition-all text-sm flex items-center justify-center gap-2">
-                        <i data-lucide="activity" class="w-4 h-4 text-lab-cyan"></i>
-                        <span>View Disease Mechanics</span>
+                    <a href="#narrative" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-semibold px-8 py-4 rounded-2xl transition-all text-sm flex items-center justify-center gap-2">
+                        <i data-lucide="compass" class="w-4 h-4 text-lab-cyan"></i>
+                        <span>Explore Anatomy Lab</span>
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- 2. SCROLLYTELLING ANATOMY LAB (MAIN EXHIBIT) -->
+        <!-- SIGNATURE FEATURE: THE JOURNEY OF ONE BREATH -->
+        <section id="signature-feature" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
+            <div class="mb-12 text-center max-w-3xl mx-auto">
+                <span class="font-mono text-xs text-lab-cyan uppercase tracking-widest font-semibold">Signature Interactive Feature</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-2">The Journey of One Breath</h2>
+                <p class="text-slate-400 text-sm sm:text-base mt-3">
+                    Compare normal physiological gas exchange against cigarette smoke inhalation side-by-side. Watch how toxic particles interact with human tissue in real time.
+                </p>
+            </div>
+
+            <!-- Mode Selector Control -->
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-10 max-w-xl mx-auto">
+                <button id="btn-breath-clean" class="flex-1 bg-lab-teal text-lab-bg font-bold px-6 py-4 rounded-2xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 border border-lab-teal">
+                    <i data-lucide="wind" class="w-4 h-4"></i>
+                    <span>Simulate 1 Normal Breath</span>
+                </button>
+                <button id="btn-breath-smoke" class="flex-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold px-6 py-4 rounded-2xl text-xs transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="flame" class="w-4 h-4 text-lab-crimson"></i>
+                    <span>Simulate 1 Cigarette Inhalation</span>
+                </button>
+            </div>
+
+            <!-- Interactive Stage Display -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <!-- Visual Stage Box -->
+                <div class="lg:col-span-7 glass-card p-6 rounded-3xl min-h-[450px] flex flex-col items-center justify-center relative overflow-hidden">
+                    
+                    <div id="breath-stage-visual" class="relative w-full h-[380px] flex items-center justify-center">
+                        <svg viewBox="0 0 300 300" class="w-64 h-64 drop-shadow-2xl">
+                            <!-- Alveolus Cluster Silhouette -->
+                            <circle cx="150" cy="150" r="80" fill="#0f172a" stroke="#1e293b" stroke-width="4"/>
+                            <circle cx="110" cy="120" r="45" fill="#1e293b" stroke="#334155" stroke-width="3"/>
+                            <circle cx="190" cy="120" r="45" fill="#1e293b" stroke="#334155" stroke-width="3"/>
+                            <!-- Capillary Flow Line -->
+                            <path id="capillary-path" d="M 50,150 Q 150,250 250,150" fill="none" stroke="#0284c7" stroke-width="6" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <div class="absolute bottom-4 left-6 right-6 flex justify-between items-center text-xs font-mono text-slate-400 border-t border-slate-800/80 pt-3">
+                        <span id="breath-phase-tag">Phase: Resting Exhalation</span>
+                        <span id="breath-sat-tag" class="text-lab-teal font-bold">SpO₂: 98%</span>
+                    </div>
+                </div>
+
+                <!-- Live Metrics & Biological Explanation Card -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="glass-card p-6 rounded-3xl">
+                        <span id="breath-mode-label" class="text-xs font-mono text-lab-teal font-bold uppercase tracking-wider block mb-2">Physiological State: Normal Airway</span>
+                        <h3 id="breath-mode-title" class="text-2xl font-bold text-white mb-3">Oxygen Diffusion Cycle</h3>
+                        <p id="breath-mode-desc" class="text-xs text-slate-300 leading-relaxed mb-6">
+                            Ambient air enters through the nasal mucosa, travels down the tracheal tree, and fills 300 million alveoli. Oxygen passive diffusion crosses the 0.5μm membrane into red blood cells.
+                        </p>
+
+                        <div class="space-y-3 font-mono text-xs">
+                            <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-400">Oxygen Saturation ($SpO_2$)</span>
+                                <span id="metric-spo2" class="text-lab-teal font-bold">98% (Optimal)</span>
+                            </div>
+                            <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-400">Ciliary Motion Velocity</span>
+                                <span id="metric-cilia-vel" class="text-lab-teal font-bold">15 mm / min</span>
+                            </div>
+                            <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-400">Carboxyhemoglobin ($COHb$)</span>
+                                <span id="metric-cohb" class="text-slate-300 font-bold">&lt; 1% (Normal)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN SCROLLYTELLING EXHIBIT (ANATOMY EXPLORER) -->
         <section id="narrative" class="scrolly-wrapper">
             
-            <!-- STICKY ANATOMICAL VECTOR STAGE (LEFT HALF) -->
-            <div class="sticky-stage">
+            <!-- STICKY ANATOMY STAGE (LEFT HALF) -->
+            <div class="sticky-visual">
                 <div class="relative w-full h-full flex items-center justify-center p-6">
                     
                     <!-- Digital Anatomy Lab Vector Skeleton & Organs -->
@@ -210,20 +286,13 @@
                                 <stop offset="0%" stop-color="#0f172a" stop-opacity="0.9"/>
                                 <stop offset="100%" stop-color="#030712" stop-opacity="0.98"/>
                             </radialGradient>
-                            <filter id="cyanGlow">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
                         </defs>
 
                         <!-- Outer Body Contour -->
                         <path d="M 200,30 C 235,30 255,55 255,90 C 255,115 245,130 240,145 C 255,158 285,175 300,205 C 320,240 325,310 325,390 C 325,490 305,570 295,750 L 105,750 C 95,570 75,490 75,390 C 75,310 80,240 100,205 C 115,175 145,158 160,145 C 155,130 145,115 145,90 C 145,55 165,30 200,30 Z" 
                               fill="url(#bodyGlow)" stroke="#1e293b" stroke-width="2"/>
 
-                        <!-- Cigarette Vector (Revealed in Smoke Chapter) -->
+                        <!-- Cigarette Vector -->
                         <g id="svg-cigarette" opacity="0" transform="translate(0,-10)">
                             <rect x="235" y="128" width="55" height="7" rx="2" fill="#f8fafc"/>
                             <rect x="278" y="128" width="12" height="7" fill="#d97706"/>
@@ -231,11 +300,11 @@
                         </g>
 
                         <!-- Nose / Mouth -->
-                        <path id="svg-nose" class="anatomy-hotspot" data-node="nose" d="M 198,55 L 210,72 L 198,75 Z" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
-                        <path id="svg-mouth" class="anatomy-hotspot" data-node="mouth" d="M 190,128 Q 200,138 210,128 Q 200,134 190,128 Z" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+                        <path id="svg-nose" class="anatomy-node" data-node="nose" d="M 198,55 L 210,72 L 198,75 Z" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+                        <path id="svg-mouth" class="anatomy-node" data-node="mouth" d="M 190,128 Q 200,138 210,128 Q 200,134 190,128 Z" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
 
                         <!-- Trachea (Windpipe) -->
-                        <g id="svg-trachea" class="anatomy-hotspot" data-node="trachea">
+                        <g id="svg-trachea" class="anatomy-node" data-node="trachea">
                             <path d="M 195,160 L 205,160 L 206,230 L 194,230 Z" fill="#0f172a" stroke="#334155" stroke-width="2"/>
                             <line x1="195" y1="175" x2="205" y2="175" stroke="#06b6d4" stroke-width="1.5"/>
                             <line x1="195" y1="190" x2="205" y2="190" stroke="#06b6d4" stroke-width="1.5"/>
@@ -243,41 +312,41 @@
                         </g>
 
                         <!-- Mainstem Bronchi -->
-                        <path id="svg-bronchi" class="anatomy-hotspot" data-node="bronchi" d="M 194,230 L 168,265 M 206,230 L 232,265" stroke="#06b6d4" stroke-width="3.5" fill="none"/>
+                        <path id="svg-bronchi" class="anatomy-node" data-node="bronchi" d="M 194,230 L 168,265 M 206,230 L 232,265" stroke="#06b6d4" stroke-width="3.5" fill="none"/>
 
-                        <!-- Lungs (Parenchyma) with Breathing Class -->
-                        <g id="svg-lungs" class="anatomy-hotspot animate-lungs" data-node="lungs">
+                        <!-- Lungs (Parenchyma) -->
+                        <g id="svg-lungs" class="anatomy-node animate-lungs" data-node="lungs">
                             <path id="lung-left" d="M 192,238 C 168,238 128,255 128,325 C 128,385 155,415 188,400 C 193,398 195,300 192,238 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
                             <path id="lung-right" d="M 208,238 C 232,238 272,255 272,325 C 272,385 245,415 212,400 C 207,398 205,300 208,238 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
                         </g>
 
                         <!-- Bronchiole Tree Structure -->
-                        <path id="svg-bronchioles" class="anatomy-hotspot" data-node="bronchioles" d="M 168,265 L 152,298 M 168,265 L 176,305 M 232,265 L 248,298 M 232,265 L 224,305" stroke="#14b8a6" stroke-width="2" fill="none"/>
+                        <path id="svg-bronchioles" class="anatomy-node" data-node="bronchioles" d="M 168,265 L 152,298 M 168,265 L 176,305 M 232,265 L 248,298 M 232,265 L 224,305" stroke="#14b8a6" stroke-width="2" fill="none"/>
 
                         <!-- Alveoli Sac Clusters -->
-                        <g id="svg-alveoli" class="anatomy-hotspot" data-node="alveoli" fill="#14b8a6" stroke="#06b6d4" stroke-width="1">
+                        <g id="svg-alveoli" class="anatomy-node" data-node="alveoli" fill="#14b8a6" stroke="#06b6d4" stroke-width="1">
                             <circle cx="148" cy="315" r="6"/>
                             <circle cx="140" cy="324" r="5"/>
                             <circle cx="252" cy="315" r="6"/>
                             <circle cx="260" cy="325" r="5"/>
                         </g>
 
-                        <!-- Diaphragm Muscle with Motion Class -->
-                        <path id="svg-diaphragm" class="anatomy-hotspot animate-diaphragm" data-node="diaphragm" d="M 115,410 Q 200,375 285,410 C 285,422 115,422 115,410 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+                        <!-- Diaphragm Muscle -->
+                        <path id="svg-diaphragm" class="anatomy-node animate-diaphragm" data-node="diaphragm" d="M 115,410 Q 200,375 285,410 C 285,422 115,422 115,410 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
                     </svg>
 
                     <div class="absolute bottom-6 left-6 bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-full text-[11px] font-mono text-slate-400 flex items-center gap-2">
-                        <i data-lucide="zoom-in" class="w-3.5 h-3.5 text-lab-cyan"></i> Interactive SVG ViewBox Camera Enabled
+                        <i data-lucide="zoom-in" class="w-3.5 h-3.5 text-lab-cyan"></i> Interactive ViewBox Camera Active
                     </div>
                 </div>
             </div>
 
-            <!-- SCROLLABLE NARRATIVE STREAM (RIGHT HALF) -->
+            <!-- SCROLL NARRATIVE STREAM -->
             <div class="story-stream">
 
                 <!-- STEP 1: RESPIRATION MECHANICS -->
                 <div class="story-step" id="step-1" data-node="lungs" data-mode="oxygen">
-                    <div class="glass-panel p-8 sm:p-10 rounded-3xl">
+                    <div class="glass-card p-8 sm:p-10 rounded-3xl">
                         <span class="font-mono text-xs text-lab-cyan font-bold tracking-widest uppercase bg-lab-cyan/10 border border-lab-cyan/20 px-3.5 py-1 rounded-full inline-block mb-4">
                             Chapter 01 // Biomechanics
                         </span>
@@ -286,7 +355,7 @@
                             Your lungs contract and expand continuously to facilitate passive diffusion of oxygen into arterial blood and remove metabolic carbon dioxide.
                         </p>
 
-                        <div class="space-y-4">
+                        <div class="space-y-4 mb-6">
                             <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
                                 <div class="flex justify-between text-xs font-mono mb-1">
                                     <span class="text-slate-400">Resting Respiratory Rate</span>
@@ -296,23 +365,19 @@
                                     <div class="w-1/3 h-full bg-lab-teal"></div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
-                                <div class="flex justify-between text-xs font-mono mb-1">
-                                    <span class="text-slate-400">Total Alveolar Surface Area</span>
-                                    <span class="text-lab-cyan font-bold">70 m² (Tennis Court)</span>
-                                </div>
-                                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                    <div class="w-4/5 h-full bg-lab-cyan"></div>
-                                </div>
-                            </div>
+                        <!-- Citation Footer -->
+                        <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-lab-cyan"></i>
+                            <span>Ref: Guyton & Hall Textbook of Medical Physiology (14th Ed.)</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- STEP 2: JOURNEY OF SMOKE -->
                 <div class="story-step" id="step-2" data-node="mouth" data-mode="smoke">
-                    <div class="glass-panel p-8 sm:p-10 rounded-3xl">
+                    <div class="glass-card p-8 sm:p-10 rounded-3xl">
                         <span class="font-mono text-xs text-lab-crimson font-bold tracking-widest uppercase bg-lab-crimson/10 border border-lab-crimson/20 px-3.5 py-1 rounded-full inline-block mb-4">
                             Chapter 02 // Journey of Smoke
                         </span>
@@ -321,9 +386,7 @@
                             When a cigarette is lit, combustion releases <strong class="text-white">7,000+ chemicals</strong>. Heat reaching $900^\circ\text{C}$ directly strips protective mucosal barriers.
                         </p>
 
-                        <!-- Chemical Spectrum Bar -->
-                        <div class="space-y-3 font-mono text-xs">
-                            <h4 class="text-slate-400 uppercase tracking-wider mb-2">Primary Chemical Concentrates</h4>
+                        <div class="space-y-3 font-mono text-xs mb-6">
                             <div>
                                 <div class="flex justify-between mb-1"><span class="text-slate-300">Tar (Polycyclic Hydrocarbons)</span><span class="text-lab-crimson">Concentrated</span></div>
                                 <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[90%] h-full bg-lab-crimson"></div></div>
@@ -332,17 +395,19 @@
                                 <div class="flex justify-between mb-1"><span class="text-slate-300">Carbon Monoxide (CO)</span><span class="text-lab-amber">200x Hb Affinity</span></div>
                                 <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[75%] h-full bg-lab-amber"></div></div>
                             </div>
-                            <div>
-                                <div class="flex justify-between mb-1"><span class="text-slate-300">Nicotine Alkaloid</span><span class="text-lab-cyan">7s Brain Delivery</span></div>
-                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[60%] h-full bg-lab-cyan"></div></div>
-                            </div>
+                        </div>
+
+                        <!-- Citation Footer -->
+                        <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-lab-crimson"></i>
+                            <span>Ref: U.S. Surgeon General Report — Health Consequences of Smoking</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- STEP 3: CILIARY PARALYSIS -->
                 <div class="story-step" id="step-3" data-node="trachea" data-mode="smoke">
-                    <div class="glass-panel p-8 sm:p-10 rounded-3xl">
+                    <div class="glass-card p-8 sm:p-10 rounded-3xl">
                         <span class="font-mono text-xs text-lab-amber font-bold tracking-widest uppercase bg-lab-amber/10 border border-lab-amber/20 px-3.5 py-1 rounded-full inline-block mb-4">
                             Chapter 03 // Ciliary Paralysis
                         </span>
@@ -351,7 +416,7 @@
                             Microscopic cilia sweeping debris upward are paralyzed within seconds by acrolein and formaldehyde. Sticky black tar pools permanently inside airway walls.
                         </p>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-4 mb-6">
                             <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
                                 <span class="text-[10px] font-mono text-slate-400 uppercase">Healthy Beat</span>
                                 <div class="text-base font-bold text-lab-teal mt-1">15 mm / min</div>
@@ -361,13 +426,19 @@
                                 <div class="text-base font-bold text-lab-crimson mt-1">0 mm (Stasis)</div>
                             </div>
                         </div>
+
+                        <!-- Citation Footer -->
+                        <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-lab-amber"></i>
+                            <span>Ref: American Thoracic Society (ATS) — Mucociliary Dysfunction</span>
+                        </div>
                     </div>
                 </div>
 
             </div>
         </section>
 
-        <!-- 3. INTERACTIVE CILIA WAVE SIMULATION -->
+        <!-- MUCOCILIARY CLEARANCE MECHANICS -->
         <section id="cilia-sim" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
             <div class="mb-12 text-center max-w-2xl mx-auto">
                 <span class="font-mono text-xs text-lab-cyan uppercase tracking-widest font-semibold">Micro-Physiology Interactive</span>
@@ -377,13 +448,11 @@
                 </p>
             </div>
 
-            <div class="glass-panel p-8 rounded-3xl text-center">
-                <!-- Dynamic Cilia SVG Animation Container -->
+            <div class="glass-card p-8 rounded-3xl text-center">
+                <!-- Dynamic Cilia SVG Animation Canvas -->
                 <svg id="cilia-canvas" viewBox="0 0 600 150" class="w-full h-auto bg-slate-950/80 rounded-2xl border border-slate-800 mb-6">
-                    <!-- Airway Wall Base -->
                     <rect x="0" y="120" width="600" height="30" fill="#1e293b"/>
                     
-                    <!-- Procedural Cilia Hair Vectors -->
                     <g id="cilia-group" stroke="#14b8a6" stroke-width="4" stroke-linecap="round">
                         <line x1="50" y1="120" x2="45" y2="60" class="cilia-hair"/>
                         <line x1="100" y1="120" x2="95" y2="60" class="cilia-hair"/>
@@ -410,60 +479,53 @@
             </div>
         </section>
 
-        <!-- 4. VISUAL EXPLAINERS: HEMOGLOBIN & AIRWAY OBSTRUCTION -->
-        <section id="visual-explainers" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
+        <!-- PATHOLOGICAL DISEASE PROFILES -->
+        <section id="pathology" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
             <div class="mb-12">
-                <span class="font-mono text-xs text-lab-cyan uppercase tracking-widest font-semibold">Visual Explanations</span>
-                <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Cellular Pathology & Airway Obstruction</h2>
+                <span class="font-mono text-xs text-lab-crimson uppercase tracking-widest font-semibold">Clinical Profiles</span>
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Pulmonary Disease Pathogenesis</h2>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Explainer 1: Hemoglobin Binding -->
-                <div class="glass-panel p-8 rounded-3xl">
-                    <h3 class="text-xl font-bold text-white mb-2">Carbon Monoxide Displacement</h3>
-                    <p class="text-xs text-slate-400 mb-6">
-                        Carbon monoxide ($CO$) binds to red blood cell hemoglobin with 200x higher affinity than oxygen ($O_2$), depriving organs of vital oxygen.
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-card p-6 rounded-3xl">
+                    <div class="w-10 h-10 rounded-xl bg-lab-crimson/10 text-lab-crimson font-mono font-bold flex items-center justify-center mb-4">COPD</div>
+                    <h3 class="text-lg font-bold text-white mb-2">COPD & Airway Obstruction</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                        Progressive airflow limitation caused by small airway remodeling, inflammatory thickening, and loss of elastic lung recoil.
                     </p>
-
-                    <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-center">
-                        <div class="inline-flex items-center gap-4 mb-4">
-                            <span class="w-8 h-8 rounded-full bg-lab-cyan/20 border border-lab-cyan text-lab-cyan font-mono text-xs font-bold flex items-center justify-center">O₂</span>
-                            <span class="text-slate-600 font-mono text-xs">VS</span>
-                            <span class="w-8 h-8 rounded-full bg-lab-crimson/20 border border-lab-crimson text-lab-crimson font-mono text-xs font-bold flex items-center justify-center">CO</span>
-                        </div>
-                        <p class="text-[11px] font-mono text-slate-400">Result: Hypoxia & Cardiac Stress</p>
+                    <div class="text-[11px] font-mono text-slate-400 bg-slate-900 p-3 rounded-xl border border-slate-800">
+                        Ref: WHO Global COPD Report
                     </div>
                 </div>
 
-                <!-- Explainer 2: COPD Airway Narrowing -->
-                <div class="glass-panel p-8 rounded-3xl">
-                    <h3 class="text-xl font-bold text-white mb-2">Airway Lumen Narrowing</h3>
-                    <p class="text-xs text-slate-400 mb-6">
-                        Chronic inflammation causes submucosal wall thickening and mucus hypersecretion, cutting effective airway cross-sectional area.
+                <div class="glass-card p-6 rounded-3xl">
+                    <div class="w-10 h-10 rounded-xl bg-lab-crimson/10 text-lab-crimson font-mono font-bold flex items-center justify-center mb-4">EMP</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Alveolar Emphysema</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                        Permanent destruction of alveolar walls driven by elastase release from inflammatory neutrophils, reducing gas diffusion area.
                     </p>
+                    <div class="text-[11px] font-mono text-slate-400 bg-slate-900 p-3 rounded-xl border border-slate-800">
+                        Ref: NIH / National Heart, Lung, and Blood Institute
+                    </div>
+                </div>
 
-                    <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex items-center justify-around">
-                        <div class="text-center">
-                            <div class="w-16 h-16 rounded-full border-4 border-lab-teal flex items-center justify-center mx-auto mb-2">
-                                <span class="text-[10px] font-mono text-slate-400">100%</span>
-                            </div>
-                            <span class="text-[10px] font-mono text-slate-400">Normal Airway</span>
-                        </div>
-                        <div class="text-center">
-                            <div class="w-16 h-16 rounded-full border-8 border-lab-crimson bg-lab-crimson/20 flex items-center justify-center mx-auto mb-2">
-                                <span class="text-[10px] font-mono text-white font-bold">35%</span>
-                            </div>
-                            <span class="text-[10px] font-mono text-slate-400">COPD Lumen</span>
-                        </div>
+                <div class="glass-card p-6 rounded-3xl">
+                    <div class="w-10 h-10 rounded-xl bg-lab-crimson/10 text-lab-crimson font-mono font-bold flex items-center justify-center mb-4">CBR</div>
+                    <h3 class="text-lg font-bold text-white mb-2">Chronic Bronchitis</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                        Submucosal gland hypertrophy causing mucus hypersecretion, productive cough, and chronic bronchial lumen narrowing.
+                    </p>
+                    <div class="text-[11px] font-mono text-slate-400 bg-slate-900 p-3 rounded-xl border border-slate-800">
+                        Ref: CDC Smoking & Tobacco Use Evidence Base
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 5. RECOVERY TIMELINE & FINALE -->
+        <!-- RECOVERY & RESONANT FINALE -->
         <section id="recovery" class="py-32 text-center px-6 relative z-30 bg-lab-bg">
             <div class="max-w-3xl mx-auto">
-                <span class="font-mono text-xs text-lab-cyan uppercase tracking-widest mb-4 inline-block">Reflective Ending</span>
+                <span class="font-mono text-xs text-lab-cyan uppercase tracking-widest mb-4 inline-block">Final Reflection</span>
                 <h2 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
                     Your lungs take <br>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-lab-teal to-lab-cyan">20,000 breaths</span> for you today.
@@ -482,7 +544,7 @@
 
     <!-- Footer -->
     <footer class="py-8 text-center text-xs text-slate-500 font-mono border-t border-slate-800/40 bg-slate-950">
-        <p>© PULMOSCIENCE Initiative. Clinical & Educational Pulmonology Exhibit.</p>
+        <p>© PULMOSCIENCE Initiative. Clinical & Educational Pulmonology Resource.</p>
     </footer>
 
     <!-- INTERACTIVE ENGINE SCRIPT -->
@@ -540,7 +602,60 @@
         }
         renderParticles();
 
-        // --- SVG VIEWBOX CAMERA ZOOMING ---
+        // --- SIGNATURE FEATURE: JOURNEY OF ONE BREATH ENGINE ---
+        const btnClean = document.getElementById('btn-breath-clean');
+        const btnSmoke = document.getElementById('btn-breath-smoke');
+        const modeLabel = document.getElementById('breath-mode-label');
+        const modeTitle = document.getElementById('breath-mode-title');
+        const modeDesc = document.getElementById('breath-mode-desc');
+        const metricSpO2 = document.getElementById('metric-spo2');
+        const metricCilia = document.getElementById('metric-cilia-vel');
+        const metricCOHb = document.getElementById('metric-cohb');
+        const navSatMeter = document.getElementById('nav-sat-meter');
+
+        btnClean.addEventListener('click', () => {
+            btnClean.className = "flex-1 bg-lab-teal text-lab-bg font-bold px-6 py-4 rounded-2xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 border border-lab-teal";
+            btnSmoke.className = "flex-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold px-6 py-4 rounded-2xl text-xs transition-all flex items-center justify-center gap-2";
+            
+            modeLabel.textContent = "Physiological State: Normal Airway";
+            modeLabel.className = "text-xs font-mono text-lab-teal font-bold uppercase tracking-wider block mb-2";
+            modeTitle.textContent = "Oxygen Diffusion Cycle";
+            modeDesc.textContent = "Ambient air enters through the nasal mucosa, travels down the tracheal tree, and fills 300 million alveoli. Oxygen passive diffusion crosses the 0.5μm membrane into red blood cells.";
+            
+            metricSpO2.textContent = "98% (Optimal)";
+            metricSpO2.className = "text-lab-teal font-bold";
+            metricCilia.textContent = "15 mm / min";
+            metricCilia.className = "text-lab-teal font-bold";
+            metricCOHb.textContent = "< 1% (Normal)";
+            
+            navSatMeter.textContent = "SpO₂: 98% (Optimal)";
+            navSatMeter.previousElementSibling.className = "w-2 h-2 rounded-full bg-lab-teal animate-pulse";
+            
+            activeMode = 'oxygen';
+        });
+
+        btnSmoke.addEventListener('click', () => {
+            btnSmoke.className = "flex-1 bg-lab-crimson text-white font-bold px-6 py-4 rounded-2xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 border border-lab-crimson";
+            btnClean.className = "flex-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold px-6 py-4 rounded-2xl text-xs transition-all flex items-center justify-center gap-2";
+            
+            modeLabel.textContent = "Pathological State: Tobacco Smoke Inhalation";
+            modeLabel.className = "text-xs font-mono text-lab-crimson font-bold uppercase tracking-wider block mb-2";
+            modeTitle.textContent = "Toxic Aerosol Exposure";
+            modeDesc.textContent = "Aerosolized combustion gases (900°C) blast bronchial airways. Acrolein paralyzes cilia, tar deposits onto mucosa, and carbon monoxide displaces oxygen in blood cells.";
+            
+            metricSpO2.textContent = "88% (Hypoxic Stress)";
+            metricSpO2.className = "text-lab-crimson font-bold";
+            metricCilia.textContent = "0 mm (Stasis)";
+            metricCilia.className = "text-lab-crimson font-bold";
+            metricCOHb.textContent = "12% (Elevated)";
+            
+            navSatMeter.textContent = "SpO₂: 88% (Hypoxic)";
+            navSatMeter.previousElementSibling.className = "w-2 h-2 rounded-full bg-lab-crimson animate-ping";
+            
+            activeMode = 'smoke';
+        });
+
+        // --- SVG VIEWBOX MATRIX ZOOMING ---
         const svgEl = document.getElementById('respiratory-svg');
         const viewBoxTargets = {
             nose: "150 40 100 100",
@@ -559,14 +674,14 @@
             });
         }
 
-        document.querySelectorAll('.anatomy-hotspot').forEach(node => {
+        document.querySelectorAll('.anatomy-node').forEach(node => {
             node.addEventListener('click', () => {
                 const key = node.getAttribute('data-node');
                 zoomViewBox(key);
             });
         });
 
-        // --- GSAP SCROLLTRIGGER ENGINE ---
+        // --- GSAP SCROLLTRIGGER STREAM ---
         const steps = gsap.utils.toArray('.story-step');
         steps.forEach(step => {
             const nodeId = step.getAttribute('data-node');
