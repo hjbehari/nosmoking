@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PULMOSCIENCE | Digital Pulmonary Lab & Science Exhibit</title>
-    <meta name="description" content="An interactive, WebGL-powered science exhibit exploring human respiratory mechanics, cellular gas exchange, and tobacco aerosol pathophysiology.">
+    <title>PULMOSCIENCE | Digital Anatomy Lab & Interactive Science Exhibit</title>
+    <meta name="description" content="A world-class interactive 3D WebGL digital science exhibit detailing human pulmonary biomechanics, gas exchange, and nicotine aerosol pathophysiology.">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -45,22 +45,23 @@
         /* WCAG 2.2 AA Focus Styling */
         *:focus-visible { outline: 3px solid #06b6d4 !important; outline-offset: 3px !important; }
 
-        /* Background WebGL Stage & Overlay Layers */
+        /* WebGL Background Stage Layer (Z-INDEX: 5) */
         #webgl-stage {
             position: fixed;
             inset: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 5; /* Base background */
+            z-index: 5;
             pointer-events: none;
         }
 
+        /* 2D Particulate Physics Canvas Overlay (Z-INDEX: 10) */
         #particle-canvas {
             position: fixed;
             inset: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 10; /* Ambient particle layer */
+            z-index: 10;
             pointer-events: none;
         }
 
@@ -70,7 +71,7 @@
             background-size: 60px 60px;
         }
 
-        /* Surface Material System (High Contrast & Readability) */
+        /* High-Contrast Surface Material System */
         .matte-card {
             background: rgba(11, 17, 31, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -98,35 +99,37 @@
             z-index: 30;
         }
 
-        /* Controlled Layout Engine (Eliminates Huge Voids) */
-        .scrolly-wrapper { position: relative; display: flex; width: 100%; }
-        .sticky-stage {
-            position: sticky;
-            top: 0;
-            height: 100vh;
+        /* Controlled Layout Engine (Strict Pinning Support) */
+        .scrolly-wrapper { position: relative; width: 100%; }
+        .pin-container { display: flex; width: 100%; min-height: 100vh; }
+        
+        .sticky-stage-left {
             width: 50%;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            position: relative;
             z-index: 20;
         }
-        .story-stream { width: 50%; margin-left: auto; position: relative; z-index: 30; }
-
-        .story-step {
-            padding: 100px 3.5rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            opacity: 0.25;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        
+        .story-stream-right {
+            width: 50%;
             position: relative;
             z-index: 30;
         }
-        .story-step.is-active {
-            opacity: 1 !important;
-            transform: translateY(0) !important;
+
+        .story-step {
+            min-height: 100vh;
+            padding: 4rem 3.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0.2;
+            transform: translateY(20px);
+            /* NO CSS TRANSITION HERE TO PREVENT CONFLICT WITH GSAP */
+            position: relative;
+            z-index: 30;
         }
 
         /* Floating Nav Progress Dots */
@@ -135,7 +138,7 @@
             height: 8px;
             border-radius: 9999px;
             background: rgba(255, 255, 255, 0.25);
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease, background-color 0.3s ease;
         }
         .progress-dot.active {
             background: #06b6d4;
@@ -143,12 +146,12 @@
             transform: scale(1.5);
         }
 
-        /* Mobile Responsive Layout Engine (<1024px) */
+        /* Responsive Mobile Fallback (<1024px) */
         @media (max-width: 1024px) {
-            .scrolly-wrapper { flex-direction: column; }
-            .sticky-stage { width: 100%; height: 40vh; position: sticky; top: 4rem; z-index: 20; }
-            .story-stream { width: 100%; margin-left: 0; }
-            .story-step { padding: 60px 1.25rem; min-height: auto; }
+            .pin-container { flex-direction: column; }
+            .sticky-stage-left { width: 100%; height: 40vh; position: sticky; top: 4rem; }
+            .story-stream-right { width: 100%; }
+            .story-step { padding: 3rem 1.25rem; min-height: 70vh; }
         }
     </style>
 </head>
@@ -156,13 +159,13 @@
 
     <!-- Accessibility Skip Link -->
     <a href="#signature-feature" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-lab-cyan focus:text-lab-bg focus:font-bold focus:rounded-xl">
-        Skip to main content
+        Skip to Journey of One Breath
     </a>
 
     <!-- THREE.JS WEBGL CANVAS STAGE (Z-INDEX: 5) -->
     <div id="webgl-stage"></div>
 
-    <!-- 2D PARTICULATE PHYSICS OVERLAY CANVAS (Z-INDEX: 10) -->
+    <!-- 2D PARTICULATE PHYSICS CANVAS OVERLAY (Z-INDEX: 10) -->
     <canvas id="particle-canvas"></canvas>
 
     <!-- FLOATING CHAPTER PROGRESS TRACKER (Z-INDEX: 50) -->
@@ -207,7 +210,7 @@
     <main role="main" class="relative z-30">
 
         <!-- 1. CINEMATIC HERO SECTION -->
-        <section id="hero" class="relative min-h-[90vh] flex flex-col justify-center items-center text-center px-6 pt-24 pb-16 overflow-hidden border-b border-slate-800/50">
+        <section id="hero" class="relative min-h-screen flex flex-col justify-center items-center text-center px-6 pt-24 pb-16 overflow-hidden border-b border-slate-800/50">
             <div class="max-w-4xl mx-auto relative z-30 bg-slate-950/80 p-8 sm:p-12 rounded-3xl border border-slate-800/80 backdrop-blur-md">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-mono text-lab-cyan mb-6">
                     <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
@@ -304,106 +307,107 @@
             </div>
         </section>
 
-        <!-- 3. SCROLLYTELLING 3D ANATOMY EXPLORER -->
+        <!-- 3. PINNED GSAP SCROLLYTELLING 3D ANATOMY EXPLORER -->
         <section id="narrative" class="scrolly-wrapper">
-            <div class="sticky-stage">
-                <!-- Visual indicator for WebGL Camera -->
-                <div class="absolute bottom-6 left-6 bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-full text-[11px] font-mono text-slate-300 flex items-center gap-2 shadow-lg">
-                    <i data-lucide="move-3d" class="w-3.5 h-3.5 text-lab-cyan"></i> 3D WebGL Camera Synchronized to Scroll
+            <div class="pin-container">
+                <div class="sticky-stage-left">
+                    <div class="absolute bottom-6 left-6 bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-full text-[11px] font-mono text-slate-300 flex items-center gap-2 shadow-lg">
+                        <i data-lucide="move-3d" class="w-3.5 h-3.5 text-lab-cyan"></i> 3D WebGL Camera Synchronized to Scroll
+                    </div>
                 </div>
-            </div>
 
-            <!-- SCROLL NARRATIVE STREAM -->
-            <div class="story-stream">
+                <!-- SCROLL NARRATIVE STREAM -->
+                <div class="story-stream-right">
 
-                <!-- STEP 1: RESPIRATION MECHANICS -->
-                <div class="story-step" id="step-1" data-camera="hero" data-mode="oxygen">
-                    <div class="matte-card p-8 sm:p-10 rounded-3xl">
-                        <span class="font-mono text-xs text-lab-cyan font-bold tracking-widest uppercase bg-lab-cyan/10 border border-lab-cyan/20 px-3.5 py-1 rounded-full inline-block mb-4">
-                            Chapter 01 // Biomechanics
-                        </span>
-                        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">The Pulmonary Engine</h2>
-                        <p class="text-slate-300 text-sm leading-relaxed mb-6">
-                            Your lungs contract and expand continuously to facilitate passive diffusion of oxygen into arterial blood and remove metabolic carbon dioxide.
-                        </p>
+                    <!-- STEP 1: RESPIRATION MECHANICS -->
+                    <div class="story-step" id="step-1" data-camera="hero" data-mode="oxygen">
+                        <div class="matte-card p-8 sm:p-10 rounded-3xl">
+                            <span class="font-mono text-xs text-lab-cyan font-bold tracking-widest uppercase bg-lab-cyan/10 border border-lab-cyan/20 px-3.5 py-1 rounded-full inline-block mb-4">
+                                Chapter 01 // Biomechanics
+                            </span>
+                            <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">The Pulmonary Engine</h2>
+                            <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                                Your lungs contract and expand continuously to facilitate passive diffusion of oxygen into arterial blood and remove metabolic carbon dioxide.
+                            </p>
 
-                        <div class="space-y-4 mb-6">
-                            <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
-                                <div class="flex justify-between text-xs font-mono mb-1">
-                                    <span class="text-slate-400">Resting Respiratory Rate</span>
-                                    <span class="text-lab-teal font-bold">12 - 16 BPM</span>
+                            <div class="space-y-4 mb-6">
+                                <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+                                    <div class="flex justify-between text-xs font-mono mb-1">
+                                        <span class="text-slate-400">Resting Respiratory Rate</span>
+                                        <span class="text-lab-teal font-bold">12 - 16 BPM</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="w-1/3 h-full bg-lab-teal"></div>
+                                    </div>
                                 </div>
-                                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                    <div class="w-1/3 h-full bg-lab-teal"></div>
+                            </div>
+
+                            <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-lab-cyan"></i>
+                                <span>Ref: Guyton & Hall Textbook of Medical Physiology (14th Ed.)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: JOURNEY OF SMOKE -->
+                    <div class="story-step" id="step-2" data-camera="trachea" data-mode="smoke">
+                        <div class="glass-panel p-8 sm:p-10 rounded-3xl">
+                            <span class="font-mono text-xs text-lab-crimson font-bold tracking-widest uppercase bg-lab-crimson/10 border border-lab-crimson/20 px-3.5 py-1 rounded-full inline-block mb-4">
+                                Chapter 02 // Journey of Smoke
+                            </span>
+                            <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">The Toxic Inhalation Path</h2>
+                            <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                                A cigarette ember burns at <strong class="text-white">900°C</strong>, but inhaled smoke cools rapidly to $\sim 42^\circ\text{C}$ in oral and tracheal pathways, depositing viscous tar droplets into mucosal surfaces.
+                            </p>
+
+                            <div class="space-y-3 font-mono text-xs mb-6">
+                                <div>
+                                    <div class="flex justify-between mb-1"><span class="text-slate-300">Tar Hydrocarbons</span><span class="text-lab-crimson">Viscous Deposition</span></div>
+                                    <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[90%] h-full bg-lab-crimson"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1"><span class="text-slate-300">Carbon Monoxide (CO)</span><span class="text-lab-amber">200x Hb Binding Affinity</span></div>
+                                    <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[45%] h-full bg-lab-amber"></div></div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400">
-                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-lab-cyan"></i>
-                            <span>Ref: Guyton & Hall Textbook of Medical Physiology (14th Ed.)</span>
+                            <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-lab-crimson"></i>
+                                <span>Ref: U.S. Surgeon General Report — Health Consequences of Smoking</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- STEP 2: JOURNEY OF SMOKE -->
-                <div class="story-step" id="step-2" data-camera="trachea" data-mode="smoke">
-                    <div class="glass-panel p-8 sm:p-10 rounded-3xl">
-                        <span class="font-mono text-xs text-lab-crimson font-bold tracking-widest uppercase bg-lab-crimson/10 border border-lab-crimson/20 px-3.5 py-1 rounded-full inline-block mb-4">
-                            Chapter 02 // Journey of Smoke
-                        </span>
-                        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">The Toxic Inhalation Path</h2>
-                        <p class="text-slate-300 text-sm leading-relaxed mb-6">
-                            A cigarette ember burns at <strong class="text-white">900°C</strong>, but inhaled smoke cools rapidly to $\sim 42^\circ\text{C}$ in oral and tracheal pathways, depositing viscous tar droplets into mucosal surfaces.
-                        </p>
+                    <!-- STEP 3: CILIARY PARALYSIS -->
+                    <div class="story-step" id="step-3" data-camera="bronchi" data-mode="smoke">
+                        <div class="matte-card p-8 sm:p-10 rounded-3xl">
+                            <span class="font-mono text-xs text-lab-amber font-bold tracking-widest uppercase bg-lab-amber/10 border border-lab-amber/20 px-3.5 py-1 rounded-full inline-block mb-4">
+                                Chapter 03 // Ciliary Paralysis
+                            </span>
+                            <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Mucociliary Impairment</h2>
+                            <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                                Microscopic cilia sweeping debris upward are paralyzed within seconds by acrolein and formaldehydes. Chronic exposure leads to complete ciliary stasis and tar pooling.
+                            </p>
 
-                        <div class="space-y-3 font-mono text-xs mb-6">
-                            <div>
-                                <div class="flex justify-between mb-1"><span class="text-slate-300">Tar Hydrocarbons</span><span class="text-lab-crimson">Viscous Deposition</span></div>
-                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[90%] h-full bg-lab-crimson"></div></div>
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+                                    <span class="text-[10px] font-mono text-slate-400 uppercase">Healthy Beat</span>
+                                    <div class="text-base font-bold text-lab-teal mt-1">15 Hz Wave</div>
+                                </div>
+                                <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+                                    <span class="text-[10px] font-mono text-slate-400 uppercase">Aerosol Stasis</span>
+                                    <div class="text-base font-bold text-lab-crimson mt-1">&lt; 2 Hz Impaired</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="flex justify-between mb-1"><span class="text-slate-300">Carbon Monoxide (CO)</span><span class="text-lab-amber">200x Hb Binding Affinity</span></div>
-                                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[45%] h-full bg-lab-amber"></div></div>
-                            </div>
-                        </div>
 
-                        <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400">
-                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-lab-crimson"></i>
-                            <span>Ref: U.S. Surgeon General Report — Health Consequences of Smoking</span>
+                            <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-lab-amber"></i>
+                                <span>Ref: American Thoracic Society (ATS) — Mucociliary Dysfunction</span>
+                            </div>
                         </div>
                     </div>
+
                 </div>
-
-                <!-- STEP 3: CILIARY PARALYSIS -->
-                <div class="story-step" id="step-3" data-camera="bronchi" data-mode="smoke">
-                    <div class="matte-card p-8 sm:p-10 rounded-3xl">
-                        <span class="font-mono text-xs text-lab-amber font-bold tracking-widest uppercase bg-lab-amber/10 border border-lab-amber/20 px-3.5 py-1 rounded-full inline-block mb-4">
-                            Chapter 03 // Ciliary Paralysis
-                        </span>
-                        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Mucociliary Impairment</h2>
-                        <p class="text-slate-300 text-sm leading-relaxed mb-6">
-                            Microscopic cilia sweeping debris upward are paralyzed within seconds by acrolein and formaldehydes. Chronic exposure leads to complete ciliary stasis and tar pooling.
-                        </p>
-
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
-                                <span class="text-[10px] font-mono text-slate-400 uppercase">Healthy Beat</span>
-                                <div class="text-base font-bold text-lab-teal mt-1">15 Hz Wave</div>
-                            </div>
-                            <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
-                                <span class="text-[10px] font-mono text-slate-400 uppercase">Aerosol Stasis</span>
-                                <div class="text-base font-bold text-lab-crimson mt-1">&lt; 2 Hz Impaired</div>
-                            </div>
-                        </div>
-
-                        <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400">
-                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-lab-amber"></i>
-                            <span>Ref: American Thoracic Society (ATS) — Mucociliary Dysfunction</span>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </section>
 
@@ -539,24 +543,28 @@
         <p>© PULMOSCIENCE Initiative. Interactive WebGL Pulmonology Exhibit.</p>
     </footer>
 
-    <!-- REFACTORED ENGINE CONTROLLER & STATE ARCHITECTURE -->
+    <!-- REFACTORED ORCHESTRATOR & ENGINE CONTROLLER -->
     <script>
         lucide.createIcons();
         gsap.registerPlugin(ScrollTrigger);
 
-        // --- CENTRALIZED STATE MANAGER ---
+        // --- CENTRALIZED LAB ORCHESTRATOR & STATE MANAGER ---
         const LabState = {
             activeMode: 'oxygen',
             audioActive: false,
             isTabVisible: true,
-            targetPos: { x: window.innerWidth * 0.25, y: window.innerHeight * 0.4 }
+            cameraTargets: {
+                hero: { x: 0, y: 0, z: 9 },
+                trachea: { x: 0, y: 1.2, z: 5.5 },
+                bronchi: { x: 0, y: -0.5, z: 4.2 }
+            }
         };
 
         document.addEventListener("visibilitychange", () => {
             LabState.isTabVisible = !document.hidden;
         });
 
-        // --- PROCEDURAL ANATOMICAL TREE (THREE.JS WEBGL) ---
+        // --- THREE.JS WEBGL ANATOMICAL STAGE ---
         const stageEl = document.getElementById('webgl-stage');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -564,6 +572,8 @@
         
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.physicallyCorrectLights = true;
+        renderer.outputEncoding = THREE.sRGBEncoding;
         stageEl.appendChild(renderer.domElement);
 
         const pulmonaryTree = new THREE.Group();
@@ -603,12 +613,13 @@
         pulmonaryTree.add(treeMesh);
         scene.add(pulmonaryTree);
 
+        // Three-Point Lighting Setup
         scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-        const pLight = new THREE.PointLight(0x06b6d4, 2.5, 40);
+        const pLight = new THREE.PointLight(0x06b6d4, 3, 40);
         pLight.position.set(0, 2, 8);
         scene.add(pLight);
 
-        camera.position.z = 9;
+        camera.position.set(0, 0, 9);
 
         function renderWebGL() {
             requestAnimationFrame(renderWebGL);
@@ -621,18 +632,24 @@
         }
         renderWebGL();
 
+        // Screen Resize Event & ScrollTrigger Refresh
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             particleCanvas.width = window.innerWidth;
             particleCanvas.height = window.innerHeight;
+            ScrollTrigger.refresh();
+        });
+
+        window.addEventListener('load', () => {
+            ScrollTrigger.refresh();
         });
 
         window.addEventListener('mousemove', (e) => {
             if (!LabState.isTabVisible) return;
-            const x = (e.clientX / window.innerWidth - 0.5) * 0.4;
-            const y = (e.clientY / window.innerHeight - 0.5) * 0.4;
+            const x = (e.clientX / window.innerWidth - 0.5) * 0.3;
+            const y = (e.clientY / window.innerHeight - 0.5) * 0.3;
             gsap.to(pulmonaryTree.rotation, { x: y, y: x, duration: 1 });
         });
 
@@ -642,11 +659,21 @@
         particleCanvas.width = window.innerWidth;
         particleCanvas.height = window.innerHeight;
 
+        function getProjectedTargetPos() {
+            const vector = new THREE.Vector3(0, 0, 0);
+            vector.project(camera);
+            return {
+                x: (vector.x * .5 + 0.5) * window.innerWidth,
+                y: (-(vector.y * .5) + 0.5) * window.innerHeight
+            };
+        }
+
         class FluidParticle {
             constructor() { this.reset(); }
             reset() {
-                this.x = LabState.targetPos.x + (Math.random() - 0.5) * 60;
-                this.y = LabState.targetPos.y + (Math.random() - 0.5) * 60;
+                const projected = getProjectedTargetPos();
+                this.x = projected.x + (Math.random() - 0.5) * 80;
+                this.y = projected.y + (Math.random() - 0.5) * 80;
                 this.vx = (Math.random() - 0.5) * 1.5;
                 this.vy = LabState.activeMode === 'smoke' ? -Math.random() * 2 - 0.5 : Math.random() * 1.5 - 0.7;
                 this.size = LabState.activeMode === 'smoke' ? Math.random() * 6 + 3 : Math.random() * 4 + 2;
@@ -723,8 +750,8 @@
         const navSatMeter = document.getElementById('nav-sat-meter');
 
         btnClean.addEventListener('click', () => {
-            btnClean.className = "flex-1 bg-lab-teal text-lab-bg font-bold px-6 py-4 rounded-2xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 border border-lab-teal";
-            btnSmoke.className = "flex-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold px-6 py-4 rounded-2xl text-xs transition-all flex items-center justify-center gap-2";
+            btnClean.className = "flex-1 bg-lab-teal text-lab-bg font-bold px-6 py-4 rounded-2xl text-xs shadow-lg flex items-center justify-center gap-2 border border-lab-teal";
+            btnSmoke.className = "flex-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold px-6 py-4 rounded-2xl text-xs flex items-center justify-center gap-2";
             btnClean.setAttribute('aria-selected', 'true');
             btnSmoke.setAttribute('aria-selected', 'false');
 
@@ -744,8 +771,8 @@
         });
 
         btnSmoke.addEventListener('click', () => {
-            btnSmoke.className = "flex-1 bg-lab-crimson text-white font-bold px-6 py-4 rounded-2xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 border border-lab-crimson";
-            btnClean.className = "flex-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold px-6 py-4 rounded-2xl text-xs transition-all flex items-center justify-center gap-2";
+            btnSmoke.className = "flex-1 bg-lab-crimson text-white font-bold px-6 py-4 rounded-2xl text-xs shadow-lg flex items-center justify-center gap-2 border border-lab-crimson";
+            btnClean.className = "flex-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold px-6 py-4 rounded-2xl text-xs flex items-center justify-center gap-2";
             btnSmoke.setAttribute('aria-selected', 'true');
             btnClean.setAttribute('aria-selected', 'false');
 
@@ -824,9 +851,22 @@
         document.getElementById('btn-cilia-healthy').addEventListener('click', () => ciliaWaveTL.play());
         document.getElementById('btn-cilia-paralyzed').addEventListener('click', () => ciliaWaveTL.pause());
 
-        // --- STABILIZED GSAP SCROLLTRIGGER ENGINE ---
+        // --- STABILIZED GSAP SCROLLTRIGGER ORCHESTRATION WITH PINNING ---
+        if (window.innerWidth >= 1024) {
+            ScrollTrigger.create({
+                trigger: "#narrative",
+                pin: true,
+                start: "top top",
+                end: "+=2400",
+                scrub: 1
+            });
+        }
+
         const steps = gsap.utils.toArray('.story-step');
-        steps.forEach((step, idx) => {
+        steps.forEach((step) => {
+            const camKey = step.getAttribute('data-camera') || 'hero';
+            const mode = step.getAttribute('data-mode') || 'oxygen';
+
             ScrollTrigger.create({
                 trigger: step,
                 start: "top 75%",
@@ -836,14 +876,25 @@
                         steps.forEach(s => s.classList.remove('is-active'));
                         step.classList.add('is-active');
                         
-                        const mode = step.getAttribute('data-mode');
-                        if (mode) LabState.activeMode = mode;
+                        LabState.activeMode = mode;
+                        
+                        // Orchestrate Three.js WebGL Camera Flight
+                        const targetCam = LabState.cameraTargets[camKey];
+                        if (targetCam) {
+                            gsap.to(camera.position, {
+                                x: targetCam.x,
+                                y: targetCam.y,
+                                z: targetCam.z,
+                                duration: 1.2,
+                                ease: "power2.out"
+                            });
+                        }
                     }
                 }
             });
         });
 
-        // Floating Right Rail Progress Dot Updates
+        // Floating Right Rail Progress Dot Highlights
         const sectionIds = ['hero', 'signature-feature', 'narrative', 'copd-cross-section', 'cilia-sim', 'recovery'];
         sectionIds.forEach(id => {
             const sec = document.getElementById(id);
