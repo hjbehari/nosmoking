@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PULMOS|CIENCE — The Interactive Respiratory Experience</title>
-    <meta name="description" content="An immersive, scroll-driven digital science museum exploring human pulmonary biomechanics, gas exchange, and tobacco pathophysiology.">
+    <title>PULMOSCIENCE | Digital Respiratory Science Museum</title>
+    <meta name="description" content="An interactive, cinematic digital science museum exploring human pulmonary biomechanics, gas exchange, and the pathophysiological impacts of tobacco aerosol.">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,12 +14,12 @@
                 extend: {
                     colors: {
                         bio: {
-                            dark: '#030712',
+                            bg: '#030712',
                             card: 'rgba(15, 23, 42, 0.75)',
-                            teal: '#14b8a6',
                             cyan: '#06b6d4',
-                            amber: '#f59e0b',
+                            teal: '#14b8a6',
                             crimson: '#e11d48',
+                            amber: '#f59e0b',
                             emerald: '#10b981'
                         }
                     },
@@ -43,34 +43,55 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        :root {
-            --bg-canvas: #030712;
-        }
-
-        body {
-            background-color: var(--bg-canvas);
-            color: #f8fafc;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow-x: hidden;
-        }
+        :root { --bg: #030712; }
+        body { background-color: var(--bg); color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
 
         /* Glassmorphism Panels */
-        .glass-card {
-            background: rgba(15, 23, 42, 0.75);
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
         }
 
-        /* Scrollytelling Layout Mechanics */
-        .scrolly-wrapper {
-            position: relative;
-            display: flex;
-            width: 100%;
+        /* Continuous Ambient Breathing */
+        @keyframes subtleBreath {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .animate-pulmo-breath {
+            animation: subtleBreath 4.5s ease-in-out infinite;
+            transform-origin: 200px 300px;
         }
 
-        .sticky-visual-stage {
+        /* SVG Zoom & Node Transition */
+        #respiratory-svg {
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: center center;
+        }
+
+        .anatomy-node {
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+        .anatomy-node:hover {
+            filter: drop-shadow(0px 0px 12px rgba(6, 182, 212, 0.9));
+        }
+
+        /* Canvas Overlay */
+        #particle-stage {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Scrollytelling Setup */
+        .scrolly-container { position: relative; display: flex; width: 100%; }
+        .sticky-visual {
             position: sticky;
             top: 0;
             height: 100vh;
@@ -79,240 +100,183 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            z-index: 10;
-        }
-
-        .scroll-narrative-stream {
-            width: 50%;
-            margin-left: auto;
-            position: relative;
             z-index: 20;
         }
+        .story-stream { width: 50%; margin-left: auto; position: relative; z-index: 30; }
 
-        .story-step {
+        .story-card {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding: 4rem 3rem;
-            opacity: 0.2;
+            opacity: 0.15;
             filter: blur(4px);
-            transform: translateY(20px) scale(0.96);
+            transform: translateY(25px);
             transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .story-step.is-active {
+        .story-card.is-active {
             opacity: 1;
             filter: blur(0px);
-            transform: translateY(0) scale(1);
-        }
-
-        /* Breathing Animation Pulse */
-        @keyframes breathCycle {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.035); }
-        }
-
-        .animate-breathing {
-            animation: breathCycle 4.2s ease-in-out infinite;
-            transform-origin: center center;
-        }
-
-        /* SVG Interactive Vectors */
-        .anatomy-path {
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            cursor: pointer;
-        }
-
-        .anatomy-path:hover {
-            filter: drop-shadow(0px 0px 12px rgba(6, 182, 212, 0.8));
-        }
-
-        .organ-highlighted {
-            stroke: #06b6d4 !important;
-            stroke-width: 3px !important;
-            fill: rgba(6, 182, 212, 0.2) !important;
-            filter: drop-shadow(0px 0px 18px rgba(6, 182, 212, 0.9));
-        }
-
-        .organ-damaged {
-            stroke: #e11d48 !important;
-            stroke-width: 3px !important;
-            fill: rgba(225, 29, 72, 0.25) !important;
-            filter: drop-shadow(0px 0px 18px rgba(225, 29, 72, 0.9));
-        }
-
-        /* Particle Overlay Canvas */
-        #particle-overlay {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 15;
+            transform: translateY(0);
         }
 
         @media (max-width: 1024px) {
-            .scrolly-wrapper { flex-direction: column; }
-            .sticky-visual-stage { width: 100%; height: 50vh; z-index: 30; }
-            .scroll-narrative-stream { width: 100%; margin-top: 50vh; }
-            .story-step { min-height: 80vh; padding: 2rem 1.5rem; }
+            .scrolly-container { flex-direction: column; }
+            .sticky-visual { width: 100%; height: 50vh; z-index: 40; }
+            .story-stream { width: 100%; margin-top: 50vh; }
+            .story-card { min-height: 80vh; padding: 2rem 1.5rem; }
         }
     </style>
 </head>
-<body class="antialiased selection:bg-bio-teal selection:text-navy-950">
+<body class="antialiased selection:bg-bio-cyan selection:text-bio-bg">
 
-    <!-- Accessibility Skip Link -->
-    <a href="#narrative-stream" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-bio-cyan focus:text-bio-dark focus:font-bold focus:rounded-lg">
-        Skip to narrative journey
-    </a>
+    <!-- Particle Overlay Canvas for Gas & Smoke Physics -->
+    <canvas id="particle-stage"></canvas>
 
-    <!-- Top Navigation -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-bio-dark/80 backdrop-blur-xl border-b border-slate-800/60 px-6 py-4 flex justify-between items-center">
+    <!-- Top Navigation Bar -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-bio-bg/85 backdrop-blur-xl border-b border-slate-800/60 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3 font-bold text-lg tracking-wider text-white">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-bio-teal to-bio-cyan flex items-center justify-center text-bio-dark font-mono font-extrabold text-xs shadow-lg shadow-bio-cyan/20">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-bio-teal to-bio-cyan flex items-center justify-center text-bio-bg font-mono font-extrabold text-xs shadow-lg shadow-bio-cyan/20">
                 PS
             </div>
             <span class="font-mono tracking-widest text-sm">PULMOS<span class="text-bio-cyan">|</span>SCIENCE</span>
         </div>
-        <div class="flex items-center gap-4 text-xs font-mono text-slate-400">
-            <span class="hidden sm:inline-block border border-slate-800 px-3 py-1 rounded-full bg-slate-900/80">
-                <span class="w-2 h-2 rounded-full bg-bio-teal inline-block mr-1.5 animate-pulse"></span>
-                Respiratory State: Dynamic
-            </span>
-            <a href="#quiz-chapter" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-1.5 rounded-lg transition-colors">Assessment</a>
-        </div>
+
+        <nav class="hidden md:flex items-center gap-6 text-xs font-mono text-slate-400">
+            <a href="#hero" class="hover:text-bio-cyan transition-colors">Hero</a>
+            <a href="#exhibit" class="hover:text-bio-cyan transition-colors">Anatomy Explorer</a>
+            <a href="#data-viz" class="hover:text-bio-cyan transition-colors">Data Viz</a>
+            <a href="#comparison" class="hover:text-bio-cyan transition-colors">Tissue Simulator</a>
+            <a href="#glossary" class="hover:text-bio-cyan transition-colors">Glossary</a>
+        </nav>
+
+        <button id="glossary-btn" class="bg-slate-900 border border-slate-800 hover:border-bio-cyan/40 text-slate-200 px-4 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all">
+            <i data-lucide="book-open" class="w-3.5 h-3.5 text-bio-cyan"></i>
+            <span>Medical Glossary</span>
+        </button>
     </header>
 
-    <!-- HERO SECTION -->
-    <section class="relative min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20 overflow-hidden border-b border-slate-800/40">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.08),rgba(3,7,18,0))]"></div>
+    <!-- 1. CINEMATIC HERO SECTION -->
+    <section id="hero" class="relative min-h-screen flex flex-col justify-center items-center text-center px-6 pt-24 pb-16 overflow-hidden border-b border-slate-800/50">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.12),rgba(3,7,18,0))]"></div>
         
-        <div class="max-w-4xl mx-auto relative z-10">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-mono text-bio-cyan mb-8">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                Interactive Digital Science Exhibit
+        <div class="max-w-4xl mx-auto relative z-20">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-mono text-bio-cyan mb-8">
+                <span class="w-2 h-2 rounded-full bg-bio-cyan animate-ping"></span>
+                National Digital Health & Science Exhibit
             </div>
 
-            <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight text-white mb-8 leading-[1.08]">
-                Every Breath <br class="hidden sm:inline">
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-bio-teal via-bio-cyan to-blue-400">Keeps You Alive.</span>
+            <h1 class="text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tight text-white mb-8 leading-[1.05]">
+                Protect Every <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-bio-teal via-bio-cyan to-blue-400">Single Breath.</span>
             </h1>
 
-            <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-12 font-light">
-                Explore the marvel of human pulmonary gas exchange, observe how 7,000+ aerosolized compounds alter living tissue, and witness the body's remarkable capacity for healing.
+            <p class="text-lg sm:text-2xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-12 font-light">
+                An interactive journey into the human respiratory system. Discover cellular gas exchange, trace the physiological impact of nicotine smoke, and observe the body's capacity to heal.
             </p>
 
-            <a href="#exhibit-main" class="inline-flex items-center gap-3 bg-white hover:bg-slate-100 text-bio-dark font-bold px-8 py-4 rounded-2xl transition-all shadow-xl shadow-white/5 text-sm group">
-                <span>Enter the Anatomy Exhibit</span>
-                <i data-lucide="arrow-down" class="w-4 h-4 group-hover:translate-y-1 transition-transform"></i>
-            </a>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#exhibit" class="w-full sm:w-auto bg-white hover:bg-slate-100 text-bio-bg font-bold px-8 py-4 rounded-2xl transition-all text-sm shadow-xl flex items-center justify-center gap-2">
+                    <span>Explore Interactive Anatomy</span>
+                    <i data-lucide="compass" class="w-4 h-4"></i>
+                </a>
+                <a href="#journey-smoke" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-semibold px-8 py-4 rounded-2xl transition-all text-sm flex items-center justify-center gap-2">
+                    <i data-lucide="flame" class="w-4 h-4 text-bio-crimson"></i>
+                    <span>Journey of Smoke</span>
+                </a>
+            </div>
         </div>
     </section>
 
-    <!-- MAIN SCROLLYTELLING EXHIBIT -->
-    <section id="exhibit-main" class="scrolly-wrapper">
+    <!-- 2. MAIN SCROLLYTELLING EXHIBIT & ANATOMY EXPLORER -->
+    <section id="exhibit" class="scrolly-container">
         
-        <!-- PARTICLE OVERLAY (O2 / CO2 / TOXIC SMOKE) -->
-        <canvas id="particle-overlay"></canvas>
-
-        <!-- STICKY ANATOMICAL VECTOR STAGE (LEFT HALF) -->
-        <div class="sticky-visual-stage">
-            <div id="svg-container" class="relative w-full h-full flex items-center justify-center p-6">
+        <!-- STICKY ANATOMY STAGE (LEFT HALF) -->
+        <div class="sticky-visual">
+            <div class="relative w-full h-full flex items-center justify-center p-6">
                 
-                <!-- High-Precision SVG Respiratory Skeleton & Organs -->
-                <svg id="respiratory-vector" viewBox="0 0 400 750" class="h-[80vh] w-auto drop-shadow-[0_0_50px_rgba(0,0,0,0.9)] animate-breathing">
+                <!-- Museum Quality Interactive Vector Skeleton & Anatomy -->
+                <svg id="respiratory-svg" viewBox="0 0 400 650" class="h-[80vh] w-auto drop-shadow-[0_0_50px_rgba(0,0,0,0.9)] animate-pulmo-breath">
                     <defs>
-                        <radialGradient id="pulmoBg" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stop-color="#0f172a" stop-opacity="0.8"/>
-                            <stop offset="100%" stop-color="#030712" stop-opacity="0.95"/>
-                        </radialGradient>
-                        <radialGradient id="lungGradient" cx="50%" cy="40%" r="60%">
-                            <stop offset="0%" stop-color="#1e293b"/>
-                            <stop offset="100%" stop-color="#0f172a"/>
+                        <radialGradient id="bodyBg" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#0f172a" stop-opacity="0.9"/>
+                            <stop offset="100%" stop-color="#030712" stop-opacity="0.98"/>
                         </radialGradient>
                     </defs>
 
-                    <!-- Body Outline -->
+                    <!-- Body Contour -->
                     <path d="M 200,30 C 235,30 255,55 255,90 C 255,115 245,130 240,145 C 255,158 285,175 300,205 C 320,240 325,310 325,390 C 325,490 305,570 295,750 L 105,750 C 95,570 75,490 75,390 C 75,310 80,240 100,205 C 115,175 145,158 160,145 C 155,130 145,115 145,90 C 145,55 165,30 200,30 Z" 
-                          fill="url(#pulmoBg)" stroke="#1e293b" stroke-width="2"/>
+                          fill="url(#bodyBg)" stroke="#1e293b" stroke-width="2"/>
 
-                    <!-- Cigarette Model (Appears on Smoke Chapters) -->
-                    <g id="vector-cigarette" opacity="0" transform="translate(0, -10)">
-                        <rect x="235" y="128" width="55" height="7" rx="2" fill="#f8fafc" />
-                        <rect x="278" y="128" width="12" height="7" fill="#d97706" />
-                        <circle id="cigarette-ember" cx="235" cy="131.5" r="3.5" fill="#e11d48" />
+                    <!-- Cigarette Model (Reveals on Smoke Stage) -->
+                    <g id="svg-cigarette" opacity="0" transform="translate(0,-10)">
+                        <rect x="235" y="128" width="55" height="7" rx="2" fill="#f8fafc"/>
+                        <rect x="278" y="128" width="12" height="7" fill="#d97706"/>
+                        <circle cx="235" cy="131.5" r="3.5" fill="#e11d48" class="animate-pulse"/>
                     </g>
 
-                    <!-- Nasal & Oral Entry -->
-                    <path id="node-nose" class="anatomy-path" d="M 198,55 L 210,72 L 198,75 Z" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
-                    <path id="node-mouth" class="anatomy-path" d="M 190,128 Q 200,138 210,128 Q 200,134 190,128 Z" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+                    <!-- Nasal / Oral Orifices -->
+                    <path id="svg-nose" class="anatomy-node" data-node="nose" d="M 198,55 L 210,72 L 198,75 Z" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+                    <path id="svg-mouth" class="anatomy-node" data-node="mouth" d="M 190,128 Q 200,138 210,128 Q 200,134 190,128 Z" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
 
-                    <!-- Pharynx / Larynx -->
-                    <path id="node-pharynx" class="anatomy-path" d="M 196,138 L 204,138 L 204,160 L 196,160 Z" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+                    <!-- Pharynx & Larynx -->
+                    <path id="svg-pharynx" class="anatomy-node" data-node="pharynx" d="M 196,138 L 204,138 L 204,160 L 196,160 Z" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
 
                     <!-- Trachea (Windpipe) -->
-                    <g id="node-trachea" class="anatomy-path">
-                        <path d="M 195,160 L 205,160 L 206,230 L 194,230 Z" fill="url(#lungGradient)" stroke="#334155" stroke-width="2"/>
+                    <g id="svg-trachea" class="anatomy-node" data-node="trachea">
+                        <path d="M 195,160 L 205,160 L 206,230 L 194,230 Z" fill="#0f172a" stroke="#334155" stroke-width="2"/>
                         <line x1="195" y1="175" x2="205" y2="175" stroke="#06b6d4" stroke-width="1.5"/>
                         <line x1="195" y1="190" x2="205" y2="190" stroke="#06b6d4" stroke-width="1.5"/>
                         <line x1="195" y1="205" x2="205" y2="205" stroke="#06b6d4" stroke-width="1.5"/>
-                        <line x1="195" y1="220" x2="205" y2="220" stroke="#06b6d4" stroke-width="1.5"/>
                     </g>
 
                     <!-- Mainstem Bronchi -->
-                    <path id="node-bronchi" class="anatomy-path" d="M 194,230 L 168,265 M 206,230 L 232,265" stroke="#06b6d4" stroke-width="3.5" fill="none"/>
+                    <path id="svg-bronchi" class="anatomy-node" data-node="bronchi" d="M 194,230 L 168,265 M 206,230 L 232,265" stroke="#06b6d4" stroke-width="3.5" fill="none"/>
 
-                    <!-- Left & Right Lung Parenchyma -->
-                    <g id="node-lungs" class="anatomy-path">
-                        <path id="lung-left" d="M 192,238 C 168,238 128,255 128,325 C 128,385 155,415 188,400 C 193,398 195,300 192,238 Z" fill="url(#lungGradient)" stroke="#334155" stroke-width="2"/>
-                        <path id="lung-right" d="M 208,238 C 232,238 272,255 272,325 C 272,385 245,415 212,400 C 207,398 205,300 208,238 Z" fill="url(#lungGradient)" stroke="#334155" stroke-width="2"/>
+                    <!-- Lungs (Left and Right Parenchyma) -->
+                    <g id="svg-lungs" class="anatomy-node" data-node="lungs">
+                        <path d="M 192,238 C 168,238 128,255 128,325 C 128,385 155,415 188,400 C 193,398 195,300 192,238 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+                        <path d="M 208,238 C 232,238 272,255 272,325 C 272,385 245,415 212,400 C 207,398 205,300 208,238 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
                     </g>
 
-                    <!-- Bronchiole Tree Structure -->
-                    <path id="node-bronchioles" class="anatomy-path" d="M 168,265 L 152,298 M 168,265 L 176,305 M 232,265 L 248,298 M 232,265 L 224,305" stroke="#14b8a6" stroke-width="2" fill="none"/>
+                    <!-- Bronchioles -->
+                    <path id="svg-bronchioles" class="anatomy-node" data-node="bronchioles" d="M 168,265 L 152,298 M 168,265 L 176,305 M 232,265 L 248,298 M 232,265 L 224,305" stroke="#14b8a6" stroke-width="2" fill="none"/>
 
                     <!-- Alveoli Clusters -->
-                    <g id="node-alveoli" class="anatomy-path" fill="#14b8a6" stroke="#06b6d4" stroke-width="1">
+                    <g id="svg-alveoli" class="anatomy-node" data-node="alveoli" fill="#14b8a6" stroke="#06b6d4" stroke-width="1">
                         <circle cx="148" cy="315" r="6"/>
                         <circle cx="140" cy="324" r="5"/>
-                        <circle cx="156" cy="325" r="5"/>
                         <circle cx="252" cy="315" r="6"/>
-                        <circle cx="244" cy="324" r="5"/>
                         <circle cx="260" cy="325" r="5"/>
                     </g>
-
-                    <!-- Heart & Capillaries -->
-                    <g id="node-heart" class="anatomy-path">
-                        <path d="M 200,280 C 190,260 168,270 178,295 C 188,315 200,330 200,330 C 200,330 212,315 222,295 C 232,270 210,260 200,280 Z" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-                    </g>
-
-                    <!-- Diaphragm Muscle -->
-                    <path id="node-diaphragm" class="anatomy-path" d="M 115,410 Q 200,375 285,410 C 285,422 115,422 115,410 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
                 </svg>
 
+                <div class="absolute bottom-6 left-6 bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-full text-[11px] font-mono text-slate-400 flex items-center gap-2">
+                    <i data-lucide="zoom-in" class="w-3.5 h-3.5 text-bio-cyan"></i> Click any organ to zoom & inspect
+                </div>
             </div>
         </div>
 
-        <!-- SCROLLABLE NARRATIVE STREAM (RIGHT HALF) -->
-        <div id="narrative-stream" class="scroll-narrative-stream">
+        <!-- SCROLL NARRATIVE STREAM (RIGHT HALF) -->
+        <div class="story-stream">
 
-            <!-- STEP 1: THE RESPIRATORY ENGINE -->
-            <div class="story-step" id="step-1" data-node="lungs" data-mode="oxygen">
-                <div class="glass-card p-8 sm:p-10 rounded-3xl border border-slate-800">
+            <!-- STEP 1: RESPIRATION MECHANICS -->
+            <div class="story-card" id="step-1" data-node="lungs" data-mode="oxygen">
+                <div class="glass-panel p-8 sm:p-10 rounded-3xl">
                     <span class="font-mono text-xs text-bio-cyan font-bold tracking-widest uppercase bg-bio-cyan/10 border border-bio-cyan/20 px-3.5 py-1 rounded-full inline-block mb-4">
                         Chapter 01 // Biomechanics
                     </span>
                     <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">The Pulmonary Engine</h2>
-                    <p class="text-slate-300 text-base leading-relaxed mb-6">
-                        Every day, your respiratory system performs over <strong class="text-white">20,000 automatic breath cycles</strong>, filtering ambient air and transferring oxygen directly into your bloodstream.
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                        Your lungs contract and expand continuously to facilitate passive diffusion of oxygen into arterial blood and remove metabolic carbon dioxide.
                     </p>
 
                     <div class="space-y-4">
                         <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs font-mono text-slate-400">Resting Respiratory Rate</span>
-                                <span class="text-xs font-mono text-bio-teal font-bold">12 - 16 BPM</span>
+                            <div class="flex justify-between text-xs font-mono mb-1">
+                                <span class="text-slate-400">Resting Respiratory Rate</span>
+                                <span class="text-bio-teal font-bold">12 - 16 BPM</span>
                             </div>
                             <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                 <div class="w-1/3 h-full bg-bio-teal"></div>
@@ -320,155 +284,95 @@
                         </div>
 
                         <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs font-mono text-slate-400">Daily Tidal Air Volume</span>
-                                <span class="text-xs font-mono text-bio-cyan font-bold">~11,000 Liters</span>
+                            <div class="flex justify-between text-xs font-mono mb-1">
+                                <span class="text-slate-400">Total Alveolar Surface Area</span>
+                                <span class="text-bio-cyan font-bold">70 m² (Tennis Court)</span>
                             </div>
                             <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                <div class="w-3/4 h-full bg-bio-cyan"></div>
+                                <div class="w-4/5 h-full bg-bio-cyan"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- STEP 2: OXYGEN EXCHANGE MECHANISM -->
-            <div class="story-step" id="step-2" data-node="alveoli" data-mode="oxygen">
-                <div class="glass-card p-8 sm:p-10 rounded-3xl border border-slate-800">
-                    <span class="font-mono text-xs text-bio-teal font-bold tracking-widest uppercase bg-bio-teal/10 border border-bio-teal/20 px-3.5 py-1 rounded-full inline-block mb-4">
-                        Chapter 02 // Micro-Physiology
-                    </span>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Alveolar Gas Exchange</h2>
-                    <p class="text-slate-300 text-base leading-relaxed mb-6">
-                        Deep inside the lungs, 300 million micro-sacs (alveoli) create a gas diffusion area equivalent to a tennis court ($70\,\text{m}^2$). Oxygen diffuses into capillaries while carbon dioxide is expelled.
-                    </p>
-
-                    <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-800">
-                        <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-3">Cellular Gas Diffusion Barrier</h4>
-                        <div class="flex items-center justify-between text-xs text-slate-300">
-                            <span>Membrane Thickness</span>
-                            <span class="font-mono font-bold text-bio-teal">0.5 Micrometers</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 3: TOXIC INHALATION ENTRY -->
-            <div class="story-step" id="step-3" data-node="mouth" data-mode="smoke">
-                <div class="glass-card p-8 sm:p-10 rounded-3xl border border-slate-800">
+            <!-- STEP 2: JOURNEY OF SMOKE -->
+            <div class="story-card" id="journey-smoke" data-node="mouth" data-mode="smoke">
+                <div class="glass-panel p-8 sm:p-10 rounded-3xl">
                     <span class="font-mono text-xs text-bio-crimson font-bold tracking-widest uppercase bg-bio-crimson/10 border border-bio-crimson/20 px-3.5 py-1 rounded-full inline-block mb-4">
-                        Chapter 03 // Point of Entry
+                        Chapter 02 // Journey of Smoke
                     </span>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">The Toxic Introduction</h2>
-                    <p class="text-slate-300 text-base leading-relaxed mb-6">
-                        Inhaling tobacco smoke releases over <strong class="text-white">7,000 chemical compounds</strong> (70+ known carcinogens) at temperatures exceeding $900^\circ\text{C}$ directly against mucosal tissues.
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">The Toxic Inhalation Path</h2>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                        When a cigarette is lit, combustion releases <strong class="text-white">7,000+ chemicals</strong>. Heat reaching $900^\circ\text{C}$ directly strips protective mucosal barriers.
                     </p>
 
-                    <!-- Chemical Data Visualization -->
-                    <div class="space-y-3">
-                        <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">Primary Aerosol Toxins</h4>
-                        
+                    <!-- Chemical Bar Spectrum -->
+                    <div class="space-y-3 font-mono text-xs">
+                        <h4 class="text-slate-400 uppercase tracking-wider mb-2">Primary Chemical Concentrates</h4>
                         <div>
-                            <div class="flex justify-between text-xs font-mono mb-1">
-                                <span class="text-slate-300">Tar (Polycyclic Hydrocarbons)</span>
-                                <span class="text-bio-crimson font-bold">High Density</span>
-                            </div>
-                            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
-                                <div class="w-[90%] h-full bg-bio-crimson"></div>
-                            </div>
+                            <div class="flex justify-between mb-1"><span class="text-slate-300">Tar (Polycyclic Hydrocarbons)</span><span class="text-bio-crimson">Concentrated</span></div>
+                            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[90%] h-full bg-bio-crimson"></div></div>
                         </div>
-
                         <div>
-                            <div class="flex justify-between text-xs font-mono mb-1">
-                                <span class="text-slate-300">Carbon Monoxide (CO)</span>
-                                <span class="text-bio-amber font-bold">200x Hb Affinity</span>
-                            </div>
-                            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
-                                <div class="w-[75%] h-full bg-bio-amber"></div>
-                            </div>
+                            <div class="flex justify-between mb-1"><span class="text-slate-300">Carbon Monoxide (CO)</span><span class="text-bio-amber">200x Hb Affinity</span></div>
+                            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[75%] h-full bg-bio-amber"></div></div>
                         </div>
-
                         <div>
-                            <div class="flex justify-between text-xs font-mono mb-1">
-                                <span class="text-slate-300">Nicotine (Neuro-addictive Alkaloid)</span>
-                                <span class="text-bio-cyan font-bold">7s Brain Delivery</span>
-                            </div>
-                            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
-                                <div class="w-[60%] h-full bg-bio-cyan"></div>
-                            </div>
+                            <div class="flex justify-between mb-1"><span class="text-slate-300">Nicotine Alkaloid</span><span class="text-bio-cyan">7s Brain Delivery</span></div>
+                            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden"><div class="w-[60%] h-full bg-bio-cyan"></div></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- STEP 4: CILIARY PARALYSIS & TRACHEAL DAMAGE -->
-            <div class="story-step" id="step-4" data-node="trachea" data-mode="smoke">
-                <div class="glass-card p-8 sm:p-10 rounded-3xl border border-slate-800">
+            <!-- STEP 3: CILIARY PARALYSIS -->
+            <div class="story-card" id="step-3" data-node="trachea" data-mode="smoke">
+                <div class="glass-panel p-8 sm:p-10 rounded-3xl">
                     <span class="font-mono text-xs text-bio-amber font-bold tracking-widest uppercase bg-bio-amber/10 border border-bio-amber/20 px-3.5 py-1 rounded-full inline-block mb-4">
-                        Chapter 04 // Defense Collapse
+                        Chapter 03 // Ciliary Paralysis
                     </span>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Ciliary Paralysis</h2>
-                    <p class="text-slate-300 text-base leading-relaxed mb-6">
-                        Microscopic cilia sweeping away debris are paralyzed within seconds by formaldehyde and acrolein. Toxic tar settles permanently in airway walls.
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Defense System Collapse</h2>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                        Microscopic cilia sweeping debris upward are paralyzed within seconds by acrolein and formaldehyde. Sticky black tar pools permanently inside airway walls.
                     </p>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
-                            <span class="text-[10px] font-mono text-slate-400 uppercase">Healthy Clearance</span>
-                            <div class="text-lg font-bold text-bio-teal mt-1">15 mm / min</div>
+                            <span class="text-[10px] font-mono text-slate-400 uppercase">Healthy Beat</span>
+                            <div class="text-base font-bold text-bio-teal mt-1">15 mm / min</div>
                         </div>
                         <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
                             <span class="text-[10px] font-mono text-slate-400 uppercase">Post-Smoke Beat</span>
-                            <div class="text-lg font-bold text-bio-crimson mt-1">Stasis (0 mm)</div>
+                            <div class="text-base font-bold text-bio-crimson mt-1">0 mm (Stasis)</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- STEP 5: SYSTEMIC PATHOLOGY & HEART -->
-            <div class="story-step" id="step-5" data-node="heart" data-mode="smoke">
-                <div class="glass-card p-8 sm:p-10 rounded-3xl border border-slate-800">
-                    <span class="font-mono text-xs text-bio-crimson font-bold tracking-widest uppercase bg-bio-crimson/10 border border-bio-crimson/20 px-3.5 py-1 rounded-full inline-block mb-4">
-                        Chapter 05 // Systemic Pathology
-                    </span>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Vascular & Cardiac Impact</h2>
-                    <p class="text-slate-300 text-base leading-relaxed mb-6">
-                        Carbon monoxide displaces oxygen in hemoglobin, starving organ tissue. Simultaneously, nicotine elevates heart rate and hardens arterial blood vessels.
-                    </p>
-
-                    <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-800">
-                        <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">Clinical Disease Progression</h4>
-                        <ul class="text-xs text-slate-300 space-y-2">
-                            <li class="flex items-center gap-2"><i data-lucide="alert-circle" class="w-4 h-4 text-bio-crimson"></i> <strong>COPD:</strong> Irreversible airway destruction.</li>
-                            <li class="flex items-center gap-2"><i data-lucide="alert-circle" class="w-4 h-4 text-bio-crimson"></i> <strong>Emphysema:</strong> Permanent rupture of alveolar walls.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 6: CESSATION & RECOVERY -->
-            <div class="story-step" id="step-6" data-node="lungs" data-mode="recovery">
-                <div class="glass-card p-8 sm:p-10 rounded-3xl border border-slate-800">
+            <!-- STEP 4: CESSATION RECOVERY -->
+            <div class="story-card" id="step-4" data-node="lungs" data-mode="recovery">
+                <div class="glass-panel p-8 sm:p-10 rounded-3xl">
                     <span class="font-mono text-xs text-bio-emerald font-bold tracking-widest uppercase bg-bio-emerald/10 border border-bio-emerald/20 px-3.5 py-1 rounded-full inline-block mb-4">
-                        Chapter 06 // Physiological Repair
+                        Chapter 04 // Cellular Healing
                     </span>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">The Capacity to Recover</h2>
-                    <p class="text-slate-300 text-base leading-relaxed mb-6">
-                        Human tissues begin cellular repair immediately upon stopping smoking. Within 1 to 9 months, ciliary networks regenerate, clearing accumulated debris.
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">The Power of Cessation</h2>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                        Human respiratory epithelium begins repairing damage immediately following nicotine withdrawal. Within 1 to 9 months, ciliary networks regenerate.
                     </p>
 
                     <div class="space-y-3 font-mono text-xs">
                         <div class="flex justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-800">
-                            <span class="text-bio-emerald font-bold">20 Minutes</span>
-                            <span class="text-slate-300">Blood pressure & pulse normalize</span>
+                            <span class="text-bio-emerald font-bold">20 Mins</span>
+                            <span class="text-slate-300">Pulse & Blood pressure normalize</span>
                         </div>
                         <div class="flex justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-800">
                             <span class="text-bio-emerald font-bold">12 Hours</span>
-                            <span class="text-slate-300">Blood CO drops to normal range</span>
+                            <span class="text-slate-300">Blood CO drops to baseline</span>
                         </div>
                         <div class="flex justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-800">
                             <span class="text-bio-emerald font-bold">1 Year</span>
-                            <span class="text-slate-300">Coronary heart disease risk drops 50%</span>
+                            <span class="text-slate-300">Heart disease risk drops 50%</span>
                         </div>
                     </div>
                 </div>
@@ -477,63 +381,157 @@
         </div>
     </section>
 
-    <!-- KNOWLEDGE CHECK ASSESSMENT -->
-    <section id="quiz-chapter" class="py-24 max-w-4xl mx-auto px-6 relative z-30">
-        <div class="glass-card p-8 sm:p-12 rounded-3xl border border-slate-800">
-            <div class="text-center mb-8">
-                <span class="font-mono text-xs text-bio-cyan uppercase tracking-widest font-semibold">Interactive Knowledge Check</span>
-                <h2 class="text-3xl font-bold text-white mt-2">Pulmonary Science Assessment</h2>
-            </div>
+    <!-- 3. DATA VISUALIZATION: LUNG CAPACITY DECLINE (D3 SVG CHART) -->
+    <section id="data-viz" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
+        <div class="mb-12">
+            <span class="font-mono text-xs text-bio-cyan uppercase tracking-widest font-semibold">Interactive Data Visualization</span>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Lifetime Lung Capacity Decline ($FEV_1$)</h2>
+            <p class="text-slate-400 text-sm max-w-2xl mt-2">
+                Observe the clinical rate of Forced Expiratory Volume ($FEV_1$) decline over a 70-year lifespan comparing a non-smoker, a heavy smoker, and a former smoker who quits at age 45.
+            </p>
+        </div>
 
-            <div id="quiz-body">
-                <div class="flex justify-between text-xs font-mono text-slate-400 mb-6">
-                    <span id="quiz-progress">Question 1 of 3</span>
-                    <span id="quiz-score-num">Score: 0</span>
-                </div>
+        <div class="glass-panel p-8 rounded-3xl">
+            <!-- SVG Line Graph -->
+            <svg id="fev-chart" viewBox="0 0 800 350" class="w-full h-auto drop-shadow-lg">
+                <!-- Grid Lines -->
+                <line x1="50" y1="50" x2="750" y2="50" stroke="#1e293b" stroke-dasharray="4"/>
+                <line x1="50" y1="125" x2="750" y2="125" stroke="#1e293b" stroke-dasharray="4"/>
+                <line x1="50" y1="200" x2="750" y2="200" stroke="#1e293b" stroke-dasharray="4"/>
+                <line x1="50" y1="275" x2="750" y2="275" stroke="#1e293b"/>
 
-                <h3 id="quiz-question-text" class="text-lg font-bold text-white mb-6">
-                    Where does oxygen exchange directly cross into the bloodstream capillaries?
-                </h3>
+                <!-- Axis Labels -->
+                <text x="40" y="55" fill="#64748b" font-family="monospace" font-size="10" text-anchor="end">100%</text>
+                <text x="40" y="130" fill="#64748b" font-family="monospace" font-size="10" text-anchor="end">75%</text>
+                <text x="40" y="205" fill="#64748b" font-family="monospace" font-size="10" text-anchor="end">50% (Disability)</text>
+                <text x="40" y="280" fill="#64748b" font-family="monospace" font-size="10" text-anchor="end">25%</text>
 
-                <div id="quiz-answers" class="space-y-3 mb-6">
-                    <!-- Dynamic Buttons -->
-                </div>
+                <!-- X Axis Age Labels -->
+                <text x="50" y="300" fill="#64748b" font-family="monospace" font-size="10">Age 20</text>
+                <text x="225" y="300" fill="#64748b" font-family="monospace" font-size="10">Age 35</text>
+                <text x="400" y="300" fill="#64748b" font-family="monospace" font-size="10">Age 50</text>
+                <text x="575" y="300" fill="#64748b" font-family="monospace" font-size="10">Age 65</text>
+                <text x="730" y="300" fill="#64748b" font-family="monospace" font-size="10">Age 80</text>
 
-                <div id="quiz-explanation" class="hidden p-4 rounded-xl text-xs leading-relaxed mb-6"></div>
+                <!-- Non-Smoker Line (Teal) -->
+                <path d="M 50,50 Q 400,80 750,120" fill="none" stroke="#14b8a6" stroke-width="3"/>
+                
+                <!-- Heavy Smoker Line (Crimson) -->
+                <path d="M 50,50 Q 300,160 750,270" fill="none" stroke="#e11d48" stroke-width="3"/>
+
+                <!-- Quit at Age 45 Line (Emerald) -->
+                <path d="M 50,50 L 330,135 Q 500,160 750,185" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="6"/>
+            </svg>
+
+            <!-- Legend -->
+            <div class="flex flex-wrap gap-6 mt-6 pt-4 border-t border-slate-800 text-xs font-mono justify-center">
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-bio-teal"></span> Non-Smoker Normal Age Decline</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-bio-crimson"></span> Heavy Smoker Rapid Loss</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-bio-emerald"></span> Quit at Age 45 (Regained Stability)</span>
             </div>
         </div>
     </section>
 
-    <!-- EMOTIONAL & RESONANT CLOSING SECTION -->
-    <section class="py-32 text-center px-6 relative z-30 border-t border-slate-800/60 bg-bio-dark">
+    <!-- 4. TISSUE COMPARISON SLIDER -->
+    <section id="comparison" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
+        <div class="mb-12">
+            <span class="font-mono text-xs text-bio-cyan uppercase tracking-widest font-semibold">Interactive Tissue Simulator</span>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Healthy vs. Smoker Pulmonary Tissue</h2>
+            <p class="text-slate-400 text-sm max-w-2xl mt-2">
+                Move the interactive state buttons below to analyze changes in tissue compliance, color, cilia velocity, and disease indicators.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div class="glass-panel p-8 rounded-3xl flex flex-col items-center justify-center text-center">
+                <div id="sim-indicator" class="w-40 h-40 rounded-full bg-bio-teal/20 border-4 border-bio-teal transition-all duration-500 flex items-center justify-center mb-6">
+                    <i id="sim-icon" data-lucide="wind" class="w-16 h-16 text-bio-teal transition-all duration-500"></i>
+                </div>
+                <h3 id="sim-title" class="text-2xl font-bold text-white mb-2">Healthy Non-Smoker</h3>
+                <p id="sim-desc" class="text-slate-300 text-xs leading-relaxed max-w-sm">
+                    Elastic, pink pulmonary parenchyma without carbon deposits. Full mucociliary clearance active.
+                </p>
+            </div>
+
+            <!-- Buttons -->
+            <div class="space-y-3">
+                <button class="sim-btn active w-full text-left p-5 rounded-2xl bg-slate-900 border border-bio-cyan text-white font-bold text-xs transition-all flex justify-between items-center" data-state="healthy">
+                    <span>Healthy Non-Smoker Tissue</span>
+                    <i data-lucide="check-circle" class="w-4 h-4 text-bio-cyan"></i>
+                </button>
+                <button class="sim-btn w-full text-left p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-300 font-bold text-xs hover:border-slate-700 transition-all flex justify-between items-center" data-state="occasional">
+                    <span>Occasional Smoker Tissue</span>
+                    <i data-lucide="alert-circle" class="w-4 h-4 text-bio-amber"></i>
+                </button>
+                <button class="sim-btn w-full text-left p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-300 font-bold text-xs hover:border-slate-700 transition-all flex justify-between items-center" data-state="heavy">
+                    <span>Heavy Smoker (20 Pack-Years)</span>
+                    <i data-lucide="x-circle" class="w-4 h-4 text-bio-crimson"></i>
+                </button>
+                <button class="sim-btn w-full text-left p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-300 font-bold text-xs hover:border-slate-700 transition-all flex justify-between items-center" data-state="former">
+                    <span>Former Smoker (5 Years Quit)</span>
+                    <i data-lucide="shield-check" class="w-4 h-4 text-bio-emerald"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. MEDICAL GLOSSARY DRAWER (EXPANDABLE) -->
+    <section id="glossary" class="py-24 max-w-7xl mx-auto px-6 border-b border-slate-800/50">
+        <div class="mb-10">
+            <span class="font-mono text-xs text-bio-cyan uppercase tracking-widest font-semibold">Scientific Terminology</span>
+            <h2 class="text-3xl font-bold text-white mt-2">Clinical Glossary</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="glass-panel p-5 rounded-2xl">
+                <h4 class="text-white font-bold text-sm mb-1">Alveoli</h4>
+                <p class="text-xs text-slate-400">Microscopic elastic air sacs where passive gas exchange between air and capillary blood occurs.</p>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl">
+                <h4 class="text-white font-bold text-sm mb-1">Cilia</h4>
+                <p class="text-xs text-slate-400">Hair-like projections lining bronchial airways that beat rhythmically to sweep mucus and debris upward.</p>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl">
+                <h4 class="text-white font-bold text-sm mb-1">FEV1 (Forced Expiratory Volume)</h4>
+                <p class="text-xs text-slate-400">Clinical measurement of air volume exhaled forcefully in the first second of exhalation.</p>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl">
+                <h4 class="text-white font-bold text-sm mb-1">Emphysema</h4>
+                <p class="text-xs text-slate-400">Pathological destruction of alveolar walls resulting in enlarged air spaces and loss of elastic recoil.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. EMOTIONAL & RESONANT FINALE -->
+    <section class="py-32 text-center px-6 relative z-30 bg-bio-bg">
         <div class="max-w-3xl mx-auto">
-            <p class="font-mono text-sm text-bio-cyan uppercase tracking-widest mb-4">Reflection</p>
-            <h2 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight mb-8">
-                You’ve taken approximately <br class="hidden sm:inline">
+            <p class="font-mono text-xs text-bio-cyan uppercase tracking-widest mb-4">Final Reflection</p>
+            <h2 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
+                You’ve taken approximately <br>
                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-bio-teal to-bio-cyan">20,000 breaths</span> today.
             </h2>
-            <p class="text-2xl font-light text-slate-300 mb-4">Every breath keeps you alive.</p>
-            <p class="text-3xl font-bold text-white mb-12">The next one is your choice.</p>
+            <p class="text-2xl font-light text-slate-300 mb-4">Your lungs never stop working for you.</p>
+            <p class="text-3xl font-bold text-white mb-12">Protect every single breath.</p>
 
             <a href="#hero" class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-bold px-6 py-3.5 rounded-xl transition-all text-xs font-mono">
                 <i data-lucide="rotate-ccw" class="w-4 h-4 text-bio-cyan"></i>
-                Restart Scientific Exhibit
+                Replay Museum Exhibit
             </a>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="py-8 text-center text-xs text-slate-500 font-mono border-t border-slate-800/40 bg-slate-950">
-        <p>© PULMOS|CIENCE Initiative. Scientific Education & Cessation Resource.</p>
+        <p>© PULMOSCIENCE Digital Museum Initiative. Clinical Educational Resource.</p>
     </footer>
 
-    <!-- SCROLLEYTELLING & PARTICLE SIMULATION ENGINE -->
+    <!-- INTERACTIVE ENGINE & SCENARIO ENGINE -->
     <script>
         lucide.createIcons();
         gsap.registerPlugin(ScrollTrigger);
 
-        // --- PARTICLE OVERLAY ENGINE (O2 vs SMOKE) ---
-        const canvas = document.getElementById('particle-overlay');
+        // --- CANVAS PARTICLE ENGINE ---
+        const canvas = document.getElementById('particle-stage');
         const ctx = canvas.getContext('2d');
 
         function resizeCanvas() {
@@ -543,76 +541,82 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        let activeMode = 'oxygen'; // 'oxygen', 'smoke', 'recovery'
-        let targetNodePos = { x: window.innerWidth * 0.25, y: window.innerHeight * 0.4 };
+        let activeMode = 'oxygen';
+        let targetCoords = { x: window.innerWidth * 0.25, y: window.innerHeight * 0.4 };
 
-        class GasParticle {
+        class Particle {
             constructor() {
                 this.reset();
             }
-
             reset() {
-                this.x = targetNodePos.x + (Math.random() - 0.5) * 40;
-                this.y = targetNodePos.y + (Math.random() - 0.5) * 40;
+                this.x = targetCoords.x + (Math.random() - 0.5) * 50;
+                this.y = targetCoords.y + (Math.random() - 0.5) * 50;
                 this.vx = (Math.random() - 0.5) * 1.5;
-                this.vy = activeMode === 'smoke' ? -Math.random() * 1.8 - 0.4 : Math.random() * 1.5 - 0.7;
-                this.size = activeMode === 'smoke' ? Math.random() * 8 + 4 : Math.random() * 4 + 2;
+                this.vy = activeMode === 'smoke' ? -Math.random() * 2 - 0.5 : Math.random() * 1.5 - 0.7;
+                this.size = activeMode === 'smoke' ? Math.random() * 7 + 4 : Math.random() * 4 + 2;
                 this.alpha = Math.random() * 0.6 + 0.2;
                 this.life = 0;
                 this.maxLife = Math.random() * 60 + 40;
             }
-
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
                 this.life++;
                 this.alpha -= 0.008;
-
-                if (this.life >= this.maxLife || this.alpha <= 0) {
-                    this.reset();
-                }
+                if (this.life >= this.maxLife || this.alpha <= 0) this.reset();
             }
-
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-
-                if (activeMode === 'oxygen') {
-                    ctx.fillStyle = `rgba(6, 182, 212, ${Math.max(0, this.alpha)})`;
-                } else if (activeMode === 'smoke') {
-                    ctx.fillStyle = `rgba(225, 29, 72, ${Math.max(0, this.alpha)})`;
-                } else {
-                    ctx.fillStyle = `rgba(16, 185, 129, ${Math.max(0, this.alpha)})`;
-                }
+                if (activeMode === 'oxygen') ctx.fillStyle = `rgba(6, 182, 212, ${Math.max(0, this.alpha)})`;
+                else if (activeMode === 'smoke') ctx.fillStyle = `rgba(225, 29, 72, ${Math.max(0, this.alpha)})`;
+                else ctx.fillStyle = `rgba(16, 185, 129, ${Math.max(0, this.alpha)})`;
                 ctx.fill();
             }
         }
 
-        const particles = Array.from({ length: 60 }, () => new GasParticle());
+        const particles = Array.from({ length: 50 }, () => new Particle());
 
-        function renderParticles() {
+        function animateParticles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            requestAnimationFrame(renderParticles);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
         }
-        renderParticles();
+        animateParticles();
 
-        // Update Emitter Coordinates Based on Active SVG Node
-        function updateTargetPos(nodeId) {
-            const el = document.getElementById(`node-${nodeId}`);
+        // --- ANATOMY ZOOM & SELECTION ENGINE ---
+        const svgEl = document.getElementById('respiratory-svg');
+
+        const zoomTargets = {
+            nose: { scale: 2.2, x: 0, y: 150 },
+            mouth: { scale: 2.2, x: 0, y: 100 },
+            trachea: { scale: 1.8, x: 0, y: 50 },
+            lungs: { scale: 1.2, x: 0, y: 0 },
+            alveoli: { scale: 2.4, x: 50, y: -80 }
+        };
+
+        function zoomToOrgan(nodeId) {
+            const target = zoomTargets[nodeId] || { scale: 1, x: 0, y: 0 };
+            svgEl.style.transform = `scale(${target.scale}) translate(${target.x}px, ${target.y}px)`;
+
+            // Update Particle Emitter Coordinates
+            const el = document.getElementById(`svg-${nodeId}`);
             if (el) {
                 const rect = el.getBoundingClientRect();
-                targetNodePos.x = rect.left + rect.width / 2;
-                targetNodePos.y = rect.top + rect.height / 2;
+                targetCoords.x = rect.left + rect.width / 2;
+                targetCoords.y = rect.top + rect.height / 2;
             }
         }
 
-        // --- GSAP SCROLLTRIGGER INTERACTION CONTROLLER ---
-        const steps = gsap.utils.toArray('.story-step');
+        document.querySelectorAll('.anatomy-node').forEach(node => {
+            node.addEventListener('click', () => {
+                const nodeId = node.getAttribute('data-node');
+                zoomToOrgan(nodeId);
+            });
+        });
 
+        // --- GSAP SCROLLTRIGGER STREAM ---
+        const steps = gsap.utils.toArray('.story-card');
         steps.forEach(step => {
             const nodeId = step.getAttribute('data-node');
             const mode = step.getAttribute('data-mode');
@@ -627,107 +631,56 @@
         });
 
         function activateStep(stepEl, nodeId, mode) {
-            // Update Text Card States
             steps.forEach(s => s.classList.remove('is-active'));
             stepEl.classList.add('is-active');
 
-            // Update Global Particle Mode
             activeMode = mode;
-            updateTargetPos(nodeId);
+            zoomToOrgan(nodeId);
 
-            // Update SVG Visual Organ Highlights & Colors
-            const allNodes = document.querySelectorAll('.anatomy-path');
-            allNodes.forEach(n => {
-                n.classList.remove('organ-highlighted', 'organ-damaged');
-            });
-
-            const targetNode = document.getElementById(`node-${nodeId}`);
-            if (targetNode) {
-                if (mode === 'smoke') {
-                    targetNode.classList.add('organ-damaged');
-                } else {
-                    targetNode.classList.add('organ-highlighted');
-                }
-            }
-
-            // Show Cigarette SVG in Smoke Mode
-            const cig = document.getElementById('vector-cigarette');
-            if (mode === 'smoke') {
-                gsap.to(cig, { opacity: 1, duration: 0.5 });
-            } else {
-                gsap.to(cig, { opacity: 0, duration: 0.5 });
-            }
+            const cig = document.getElementById('svg-cigarette');
+            if (mode === 'smoke') gsap.to(cig, { opacity: 1, duration: 0.5 });
+            else gsap.to(cig, { opacity: 0, duration: 0.5 });
         }
 
-        // --- ADAPTIVE QUIZ ENGINE ---
-        const quizData = [
-            {
-                q: "Where does oxygen exchange directly cross into bloodstream capillaries?",
-                options: ["Bronchioles", "Alveoli", "Trachea", "Larynx"],
-                correct: 1,
-                exp: "Alveoli are tiny elastic sacs surrounded by capillaries where passive gas exchange occurs."
+        // --- TISSUE SIMULATOR INTERACTION ---
+        const simStates = {
+            healthy: {
+                title: "Healthy Non-Smoker",
+                desc: "Elastic, pink pulmonary parenchyma without carbon deposits. Full mucociliary clearance active.",
+                color: "#14b8a6"
             },
-            {
-                q: "What effect does tobacco aerosol have on ciliary clearance?",
-                options: ["Accelerates movement", "Immobilizes cilia in seconds", "Increases oxygen uptake", "Expands lung surface"],
-                correct: 1,
-                exp: "Formaldehyde and toxic irritants paralyze cilia, trapping tar and foreign particulates inside mucosal walls."
+            occasional: {
+                title: "Occasional Smoker",
+                desc: "Mild mucosal irritation, slight reduction in ciliary beat frequency, subclinical tar mottling.",
+                color: "#f59e0b"
+            },
+            heavy: {
+                title: "Heavy Smoker (20 Pack-Years)",
+                desc: "Carbonized tar deposition, alveolar wall rupture (emphysema), destroyed cilia, high COPD risk.",
+                color: "#e11d48"
+            },
+            former: {
+                title: "Former Smoker (5 Years Quit)",
+                desc: "Regenerated bronchial cilia, cleared airway mucus, stabilized lung capacity decline.",
+                color: "#10b981"
             }
-        ];
+        };
 
-        let qIdx = 0;
-        let qScore = 0;
+        document.querySelectorAll('.sim-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.sim-btn').forEach(b => {
+                    b.className = "sim-btn w-full text-left p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-300 font-bold text-xs hover:border-slate-700 transition-all flex justify-between items-center";
+                });
+                btn.className = "sim-btn active w-full text-left p-5 rounded-2xl bg-slate-900 border border-bio-cyan text-white font-bold text-xs transition-all flex justify-between items-center";
 
-        function loadQuiz() {
-            const current = quizData[qIdx];
-            document.getElementById('quiz-progress').textContent = `Question ${qIdx + 1} of ${quizData.length}`;
-            document.getElementById('quiz-question-text').textContent = current.q;
-            
-            const container = document.getElementById('quiz-answers');
-            container.innerHTML = '';
+                const stateKey = btn.getAttribute('data-state');
+                const data = simStates[stateKey];
 
-            current.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 p-4 rounded-xl text-xs font-medium transition-all flex items-center justify-between";
-                btn.innerHTML = `<span>${opt}</span> <i data-lucide="circle" class="w-4 h-4 text-slate-600"></i>`;
-                btn.onclick = () => answerQuiz(idx, btn);
-                container.appendChild(btn);
+                document.getElementById('sim-title').textContent = data.title;
+                document.getElementById('sim-desc').textContent = data.desc;
+                const ind = document.getElementById('sim-indicator');
+                ind.style.borderColor = data.color;
             });
-            lucide.createIcons();
-            document.getElementById('quiz-explanation').classList.add('hidden');
-        }
-
-        function answerQuiz(selected, btn) {
-            const current = quizData[qIdx];
-            const exp = document.getElementById('quiz-explanation');
-
-            document.querySelectorAll('#quiz-answers button').forEach(b => b.disabled = true);
-
-            if (selected === current.correct) {
-                qScore++;
-                btn.className = "w-full text-left bg-bio-emerald/20 border border-bio-emerald text-bio-emerald p-4 rounded-xl text-xs font-bold transition-all flex items-center justify-between";
-                exp.className = "p-4 rounded-xl text-xs leading-relaxed mb-6 bg-bio-emerald/10 border border-bio-emerald/30 text-bio-emerald";
-                exp.textContent = "Correct! " + current.exp;
-            } else {
-                btn.className = "w-full text-left bg-bio-crimson/20 border border-bio-crimson text-bio-crimson p-4 rounded-xl text-xs font-bold transition-all flex items-center justify-between";
-                exp.className = "p-4 rounded-xl text-xs leading-relaxed mb-6 bg-bio-crimson/10 border border-bio-crimson/30 text-bio-crimson";
-                exp.textContent = "Incorrect. " + current.exp;
-            }
-
-            document.getElementById('quiz-score-num').textContent = `Score: ${qScore}`;
-            exp.classList.remove('hidden');
-
-            setTimeout(() => {
-                qIdx++;
-                if (qIdx < quizData.length) {
-                    loadQuiz();
-                }
-            }, 3000);
-        }
-
-        window.addEventListener('load', () => {
-            loadQuiz();
-            updateTargetPos('lungs');
         });
     </script>
 </body>
